@@ -3,7 +3,6 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaClient } from '../generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as dotenv from 'dotenv';
-import { nextCookies } from 'better-auth/next-js';
 
 dotenv.config();
 
@@ -22,7 +21,6 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  plugins: [nextCookies()],
   trustedOrigins: ['http://localhost:9909'],
   advanced: {
     disableOriginCheck: true,
