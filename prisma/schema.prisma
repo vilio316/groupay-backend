@@ -14,18 +14,17 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  name          String?
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  clusters      Cluster[]
-  plans         Plan[]
-  member        Member?
+  id                 String          @id @default(uuid())
+  email              String          @unique
+  name               String?
+  emailVerified      Boolean         @default(false)
+  image              String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  sessions           Session[]
+  accounts           Account[]
+  clusterMemberships ClusterMember[]
+  planMemberships    PlanMember[]
 
   @@map("user")
 }
@@ -78,34 +77,21 @@ model Verification {
   @@map("verification")
 }
 
-model Member {
-  memberId String @unique
-  member   User   @relation(fields: [memberId], references: [id])
-
-  joinDate  DateTime @default(now())
-  cluster   Cluster? @relation(fields: [clusterId], references: [id])
-  clusterId String?
-  plan      Plan?    @relation(fields: [planId], references: [id])
-  planId    String?
-}
-
 model Cluster {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  accountNumber String
+  accountNumber String?
   transactions  Transaction[]
-  members       Member[]
-
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String?
+  members       ClusterMember[]
+  plans         Plan[]
 }
 
 model Transaction {
   id String @id @default(uuid())
 
-  cluster   Cluster? @relation(fields: [clusterId], references: [id])
+  cluster   Cluster? @relation(fields: [clusterId], references: [id], onDelete: SetNull)
   clusterId String?
   plan      Plan?    @relation(fields: [planId], references: [id])
   planId    String?
@@ -117,8 +103,36 @@ model Plan {
   updatedAt DateTime @updatedAt
 
   transactions Transaction[]
-  members      Member[]
+  members      PlanMember[]
 
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String?
+  cluster   Cluster @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  clusterId String
+}
+
+model ClusterMember {
+  id       String   @id @default(uuid())
+  joinedAt DateTime @default(now())
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  cluster   Cluster @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  clusterId String
+
+  @@unique([userId, clusterId])
+  @@index([clusterId])
+  @@index([userId])
+}
+
+model PlanMember {
+  id       String   @id @default(uuid())
+  joinedAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  plan   Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  planId String
+
+  @@unique([userId, planId])
+  @@index([planId])
+  @@index([userId])
 }

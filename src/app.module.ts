@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { auth } from '../lib/auth';
 import { PrismaModule } from './prisma/prisma.module';
+import { ClustersModule } from './clusters/clusters.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PrismaModule } from './prisma/prisma.module';
       },
     }),
     PrismaModule,
+    ClustersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
