@@ -8,6 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { ClustersService } from './clusters.service';
+import { OptionalAuth } from '@thallesp/nestjs-better-auth';
 
 type CreateClusterBody = {
   accountNumber?: string;
@@ -26,6 +27,7 @@ type UpdateClusterAccountBody = {
   accountNumber: string;
 };
 
+@OptionalAuth()
 @Controller('clusters')
 export class ClustersController {
   constructor(private readonly clustersService: ClustersService) {}

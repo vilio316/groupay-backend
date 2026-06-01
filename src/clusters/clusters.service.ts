@@ -18,6 +18,11 @@ type UpdateClusterAccountDto = {
   accountNumber: string;
 };
 
+type ClusterTransaction = Pick<
+  PrismaService,
+  'clusterMember' | 'plan' | 'planMember'
+>;
+
 @Injectable()
 export class ClustersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -28,7 +33,7 @@ export class ClustersService {
 
     return this.prisma.cluster.create({
       data: {
-        accountNumber: accountNumber?.trim() || undefined,
+        accountNumber: accountNumber?.trim() || '',
         members: {
           create: uniqueMemberIds.map((userId) => ({
             user: { connect: { id: userId } },
@@ -42,7 +47,6 @@ export class ClustersService {
   findClusters() {
     return this.prisma.cluster.findMany({
       orderBy: { createdAt: 'desc' },
-      include: this.clusterInclude(),
     });
   }
 
@@ -122,9 +126,11 @@ export class ClustersService {
     await this.assertUsersExist(uniqueMemberIds);
 
     return this.prisma.$transaction(async (tx) => {
+      const clusterTx = tx as unknown as ClusterTransaction;
+
       await Promise.all(
         uniqueMemberIds.map((userId) =>
-          tx.clusterMember.upsert({
+          clusterTx.clusterMember.upsert({
             where: { userId_clusterId: { userId, clusterId } },
             update: {},
             create: {
@@ -135,7 +141,7 @@ export class ClustersService {
         ),
       );
 
-      return tx.plan.create({
+      return clusterTx.plan.create({
         data: {
           cluster: { connect: { id: clusterId } },
           members: {
@@ -185,7 +191,9 @@ export class ClustersService {
     await this.assertUsersExist([userId]);
 
     return this.prisma.$transaction(async (tx) => {
-      await tx.clusterMember.upsert({
+      const clusterTx = tx as unknown as ClusterTransaction;
+
+      await clusterTx.clusterMember.upsert({
         where: { userId_clusterId: { userId, clusterId } },
         update: {},
         create: {
@@ -194,7 +202,7 @@ export class ClustersService {
         },
       });
 
-      return tx.planMember.upsert({
+      return clusterTx.planMember.upsert({
         where: { userId_planId: { userId, planId } },
         update: {},
         create: {
