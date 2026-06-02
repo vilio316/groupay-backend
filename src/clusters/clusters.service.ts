@@ -133,7 +133,10 @@ export class ClustersService {
     });
   }
 
-  async createPlan(clusterId: string, { memberIds = [] }: CreatePlanDto) {
+  async createPlan(
+    clusterId: string,
+    { memberIds = [], name, desc }: CreatePlanDto,
+  ) {
     await this.assertClusterExists(clusterId);
 
     const uniqueMemberIds = this.uniqueIds(memberIds);
@@ -157,6 +160,8 @@ export class ClustersService {
 
       return clusterTx.plan.create({
         data: {
+          name: name,
+          desc: desc,
           cluster: { connect: { id: clusterId } },
           members: {
             create: uniqueMemberIds.map((userId) => ({

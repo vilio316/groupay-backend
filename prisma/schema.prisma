@@ -105,6 +105,7 @@ model Plan {
   updatedAt DateTime @updatedAt
   name      String?
   desc String?
+  minimumContribution String?
 
   transactions Transaction[]
   members      PlanMember[]
