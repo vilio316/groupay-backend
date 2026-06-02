@@ -25,6 +25,16 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
+  user: {
+    additionalFields: {
+      phone: {
+        type: 'string',
+        required: false,
+        defaultValue: '08044441123',
+        input: true,
+      },
+    },
+  },
   trustedOrigins: ['http://localhost:9909'],
   advanced: {
     disableOriginCheck: true,

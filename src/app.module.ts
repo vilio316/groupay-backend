@@ -5,6 +5,8 @@ import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { auth } from '../lib/auth';
 import { PrismaModule } from './prisma/prisma.module';
 import { ClustersModule } from './clusters/clusters.module';
+import { SquadModule } from './squad/squad.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -18,6 +20,14 @@ import { ClustersModule } from './clusters/clusters.module';
     }),
     PrismaModule,
     ClustersModule,
+    SquadModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        secretKey: config.getOrThrow<string>('SQUAD_SECRET_KEY'),
+        isProduction: config.get('NODE_ENV') === 'production',
+      }),
+      inject: [ConfigService],
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
