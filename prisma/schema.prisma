@@ -81,6 +81,8 @@ model Cluster {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  name      String?
+  desc String?
 
   accountNumber String?
   transactions  Transaction[]
@@ -101,6 +103,8 @@ model Plan {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  name      String?
+  desc String?
 
   transactions Transaction[]
   members      PlanMember[]

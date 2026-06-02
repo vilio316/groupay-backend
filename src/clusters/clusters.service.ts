@@ -8,10 +8,14 @@ import { PrismaService } from '../prisma/prisma.service';
 type CreateClusterDto = {
   accountNumber?: string;
   memberIds?: string[];
+  name?: string;
+  desc?: string;
 };
 
 type CreatePlanDto = {
   memberIds?: string[];
+  name?: string;
+  desc?: string;
 };
 
 type UpdateClusterAccountDto = {
@@ -27,13 +31,15 @@ type ClusterTransaction = Pick<
 export class ClustersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createCluster({ accountNumber, memberIds = [] }: CreateClusterDto) {
+  async createCluster({ memberIds = [], name, desc }: CreateClusterDto) {
     const uniqueMemberIds = this.uniqueIds(memberIds);
     await this.assertUsersExist(uniqueMemberIds);
 
     return this.prisma.cluster.create({
       data: {
-        accountNumber: accountNumber?.trim() || '',
+        name: name,
+        desc: desc,
+        accountNumber: '',
         members: {
           create: uniqueMemberIds.map((userId) => ({
             user: { connect: { id: userId } },
@@ -47,6 +53,14 @@ export class ClustersService {
   findClusters() {
     return this.prisma.cluster.findMany({
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findClustersByUser(userId: string) {
+    return this.prisma.clusterMember.findMany({
+      where: {
+        userId: userId,
+      },
     });
   }
 

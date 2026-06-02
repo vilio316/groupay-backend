@@ -13,10 +13,12 @@ import { OptionalAuth } from '@thallesp/nestjs-better-auth';
 type CreateClusterBody = {
   accountNumber?: string;
   memberIds?: string[];
+  name?: string;
 };
 
 type CreatePlanBody = {
   memberIds?: string[];
+  name: string;
 };
 
 type MemberBody = {
@@ -40,6 +42,12 @@ export class ClustersController {
   @Get()
   findClusters() {
     return this.clustersService.findClusters();
+  }
+
+  @Post('myClusters')
+  myCluster(@Body() body: any) {
+    console.log(body);
+    return this.clustersService.findClustersByUser(body.userId);
   }
 
   @Get(':clusterId')
