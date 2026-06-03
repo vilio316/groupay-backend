@@ -26,6 +26,8 @@ model User {
   clusterMemberships ClusterMember[]
   planMemberships    PlanMember[]
 
+  phone String? @default("08044441123")
+
   @@map("user")
 }
 
@@ -82,7 +84,7 @@ model Cluster {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   name      String?
-  desc String?
+  desc      String?
 
   accountNumber String?
   transactions  Transaction[]
@@ -100,11 +102,11 @@ model Transaction {
 }
 
 model Plan {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  name      String?
-  desc String?
+  id                  String   @id @default(uuid())
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  name                String?
+  desc                String?
   minimumContribution String?
 
   transactions Transaction[]
