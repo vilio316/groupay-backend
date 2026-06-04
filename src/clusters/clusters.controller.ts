@@ -7,23 +7,19 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { ClustersService } from './clusters.service';
+import {
+  ClustersService,
+  CreateClusterDto,
+  CreatePlanDto,
+} from './clusters.service';
 import { OptionalAuth } from '@thallesp/nestjs-better-auth';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-type CreateClusterBody = {
-  accountNumber?: string;
-  memberIds?: string[];
-  name?: string;
-};
-
-type CreatePlanBody = {
-  memberIds?: string[];
-  name: string;
-};
-
-type MemberBody = {
+class MemberBody {
+  @IsNotEmpty()
+  @IsString()
   userId: string;
-};
+}
 
 type UpdateClusterAccountBody = {
   accountNumber: string;
@@ -35,7 +31,7 @@ export class ClustersController {
   constructor(private readonly clustersService: ClustersService) {}
 
   @Post()
-  createCluster(@Body() body: CreateClusterBody) {
+  createCluster(@Body() body: CreateClusterDto) {
     return this.clustersService.createCluster(body);
   }
 
@@ -45,8 +41,7 @@ export class ClustersController {
   }
 
   @Post('myClusters')
-  myCluster(@Body() body: any) {
-    console.log(body);
+  myCluster(@Body() body: { userId: string }) {
     return this.clustersService.findClustersByUser(body.userId);
   }
 
@@ -87,7 +82,7 @@ export class ClustersController {
   @Post(':clusterId/plans')
   createPlan(
     @Param('clusterId') clusterId: string,
-    @Body() body: CreatePlanBody,
+    @Body() body: CreatePlanDto,
   ) {
     return this.clustersService.createPlan(clusterId, body);
   }

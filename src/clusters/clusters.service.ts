@@ -4,19 +4,32 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-type CreateClusterDto = {
+export class CreateClusterDto {
   accountNumber?: string;
-  memberIds?: string[];
-  name?: string;
-  desc?: string;
-};
+  @IsNotEmpty()
+  memberIds: string[];
 
-type CreatePlanDto = {
-  memberIds?: string[];
-  name?: string;
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
   desc?: string;
-};
+}
+
+export class CreatePlanDto {
+  @IsNotEmpty()
+  memberIds: string[];
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  desc: string;
+}
 
 type UpdateClusterAccountDto = {
   accountNumber: string;
