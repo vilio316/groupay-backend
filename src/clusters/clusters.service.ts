@@ -104,6 +104,22 @@ export class ClustersService {
     });
   }
 
+  async updateClusterDetails(
+    clusterId: string,
+    { name, desc }: Partial<CreateClusterDto>,
+  ) {
+    await this.assertClusterExists(clusterId);
+
+    return this.prisma.cluster.update({
+      data: {
+        name: name,
+        desc: desc,
+      },
+      where: { id: clusterId },
+      include: this.clusterInclude(),
+    });
+  }
+
   async updateClusterAccountNumber(
     clusterId: string,
     { accountNumber }: UpdateClusterAccountDto,

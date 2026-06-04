@@ -52,6 +52,15 @@ export class ClustersController {
     return this.clustersService.findCluster(clusterId);
   }
 
+  @Patch(':clusterId')
+  updateCluster(
+    @Param('clusterId') clusterId: string,
+    @Body() body: Partial<CreateClusterDto>,
+  ) {
+    console.log(body);
+    return this.clustersService.updateClusterDetails(clusterId, body);
+  }
+
   @Delete(':clusterId')
   deleteCluster(@Param('clusterId') clusterId: string) {
     return this.clustersService.deleteCluster(clusterId);
