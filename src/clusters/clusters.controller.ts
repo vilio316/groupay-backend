@@ -11,9 +11,11 @@ import {
   ClustersService,
   CreateClusterDto,
   CreatePlanDto,
+  EditPlanDto,
 } from './clusters.service';
 import { OptionalAuth } from '@thallesp/nestjs-better-auth';
 import { IsNotEmpty, IsString } from 'class-validator';
+import cluster from 'cluster';
 
 class MemberBody {
   @IsNotEmpty()
@@ -85,6 +87,15 @@ export class ClustersController {
     @Body() body: CreatePlanDto,
   ) {
     return this.clustersService.createPlan(clusterId, body);
+  }
+
+  @Patch(':clusterId/plans/:planId')
+  updatePlan(
+    @Param('clusterId') clusterId: string,
+    @Param('planId') planId: string,
+    @Body() body: EditPlanDto,
+  ) {
+    return this.clustersService.updatePlan(clusterId, planId, body);
   }
 
   @Get(':clusterId/plans')

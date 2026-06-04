@@ -31,6 +31,12 @@ export class CreatePlanDto {
   desc: string;
 }
 
+export class EditPlanDto {
+  name?: string;
+  desc?: string;
+  minimumContribution?: string;
+}
+
 type UpdateClusterAccountDto = {
   accountNumber: string;
 };
@@ -215,6 +221,23 @@ export class ClustersService {
 
     return this.prisma.plan.delete({
       where: { id: planId },
+    });
+  }
+
+  async updatePlan(
+    clusterId: string,
+    planId: string,
+    { name, desc }: EditPlanDto,
+  ) {
+    await this.assertPlanInCluster(clusterId, planId);
+
+    return this.prisma.plan.update({
+      where: { id: planId },
+      data: {
+        name: name,
+        desc: desc,
+      },
+      include: this.planInclude(),
     });
   }
 
