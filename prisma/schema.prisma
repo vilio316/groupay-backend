@@ -108,6 +108,7 @@ model Plan {
   name                String?
   desc                String?
   minimumContribution String?
+  planType            String   @default("Subscription")
 
   transactions Transaction[]
   members      PlanMember[]
