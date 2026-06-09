@@ -7,9 +7,13 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ClustersModule } from './clusters/clusters.module';
 import { SquadModule } from './squad/squad.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
+    CacheModule.register({
+      isGlobal: true,
+    }),
     AuthModule.forRoot({
       auth,
       bodyParser: {

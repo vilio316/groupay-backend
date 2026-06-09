@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   CreateClusterDto,
@@ -15,6 +16,7 @@ import {
 } from './clusters.dto';
 import { ClustersService } from './clusters.service';
 import { OptionalAuth } from '@thallesp/nestjs-better-auth';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 type UpdateClusterAccountBody = {
   accountNumber: string;
@@ -22,6 +24,7 @@ type UpdateClusterAccountBody = {
 
 @OptionalAuth()
 @Controller('clusters')
+@UseInterceptors(CacheInterceptor)
 export class ClustersController {
   constructor(private readonly clustersService: ClustersService) {}
 

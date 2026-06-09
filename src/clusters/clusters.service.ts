@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,6 +11,7 @@ import {
   EditPlanDto,
   UpdateClusterAccountDto,
 } from './clusters.dto';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 type ClusterTransaction = Pick<
   PrismaService,
@@ -18,7 +20,10 @@ type ClusterTransaction = Pick<
 
 @Injectable()
 export class ClustersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   async createCluster({ memberIds = [], name, desc }: CreateClusterDto) {
     const uniqueMemberIds = this.uniqueIds(memberIds);
