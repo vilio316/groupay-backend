@@ -8,20 +8,13 @@ import {
   Post,
 } from '@nestjs/common';
 import {
-  ClustersService,
   CreateClusterDto,
   CreatePlanDto,
   EditPlanDto,
-} from './clusters.service';
+  MemberBody,
+} from './clusters.dto';
+import { ClustersService } from './clusters.service';
 import { OptionalAuth } from '@thallesp/nestjs-better-auth';
-import { IsNotEmpty, IsString } from 'class-validator';
-import cluster from 'cluster';
-
-class MemberBody {
-  @IsNotEmpty()
-  @IsString()
-  userId: string;
-}
 
 type UpdateClusterAccountBody = {
   accountNumber: string;
