@@ -38,7 +38,7 @@ export class SquadController {
   constructor(private readonly squadService: SquadService) {}
 
   // @AllowAnonymous()
-  // @Post('webhook')
+  // @Post('webhook')v
   // @HttpCode(HttpStatus.OK)
   // handleWebhook(
   //   @Body() payload: Record<string, unknown>,
@@ -122,11 +122,10 @@ export class SquadController {
     return this.squadService.queryTransactions(query);
   }
 
-  // @Roles(['admin', 'reviewer'])
-  // @Post('/virtual')
-  // postVirtualAccount(@Body() dto: VirtualAccountDto) {
-  //   return this.squadService.virtualAccount(dto);
-  // }
+  @Post('/virtual')
+  postVirtualAccount(@Body() dto: VirtualAccountDto) {
+    return this.squadService.virtualAccount(dto);
+  }
 
   // @Roles(['admin', 'reviewer'])
   // @Get('vendors/:vendorId/virtual-accounts')

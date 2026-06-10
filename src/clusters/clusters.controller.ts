@@ -17,6 +17,7 @@ import {
 import { ClustersService } from './clusters.service';
 import { OptionalAuth } from '@thallesp/nestjs-better-auth';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+import { VirtualAccountDto } from '../squad/dto/squad.dto';
 
 type UpdateClusterAccountBody = {
   accountNumber: string;
@@ -140,5 +141,13 @@ export class ClustersController {
     @Param('userId') userId: string,
   ) {
     return this.clustersService.removePlanMember(clusterId, planId, userId);
+  }
+
+  @Post(':clusterId/requestVirtual')
+  requestVA(
+    @Param('clusterId') clusterId: string,
+    @Body() body: VirtualAccountDto,
+  ) {
+    return this.clustersService.requestVirtualAccountNumber(clusterId, body);
   }
 }

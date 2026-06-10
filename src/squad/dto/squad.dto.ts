@@ -126,9 +126,8 @@ export class SimulatePaymentDto {
   @IsNotEmpty()
   virtual_account_number: string;
 
-  @IsNumber()
-  @Min(1)
-  amount: number;
+  @IsNotEmpty()
+  amount: string;
 }
 
 // ─── Account Lookup ──────────────────────────────────────────────────────────
@@ -230,8 +229,6 @@ export class VirtualAccountDto {
   @IsString()
   @IsOptional()
   vendorId?: string;
-
-  @IsNotEmpty()
   customer_identifier: string;
 
   @IsNotEmpty()
@@ -240,6 +237,7 @@ export class VirtualAccountDto {
   @IsNotEmpty()
   last_name: string;
 
+  @IsString()
   mobile_num: string;
 
   @IsNotEmpty()

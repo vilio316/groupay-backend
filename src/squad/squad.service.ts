@@ -836,6 +836,11 @@ export class SquadService {
   //   };
   // }
 
+  async virtualAccount(dto): Promise<SquadApiResponse<any>> {
+    const { data } = await this.http.post('/virtual-account', dto);
+    return data;
+  }
+
   //Virtual Account Generation for users
   // async virtualAccount(dto: VirtualAccountDto): Promise<SquadApiResponse<any>> {
   //   const { vendorId: explicitVendorId, ...squadDto } = dto;

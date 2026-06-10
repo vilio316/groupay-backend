@@ -12,6 +12,16 @@ import {
   UpdateClusterAccountDto,
 } from './clusters.dto';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { SquadService } from '../squad/squad.service';
+import { VirtualAccountDto } from '../squad/dto/squad.dto';
+import {
+  SQUAD_MODULE_OPTIONS,
+  SQUAD_SANDBOX_BASE_URL,
+  SQUAD_PRODUCTION_BASE_URL,
+} from '../squad/squad.config';
+import type { SquadModuleOptions } from '../squad/squad.config';
+import type { AxiosInstance } from 'axios';
+import axios from 'axios';
 
 type ClusterTransaction = Pick<
   PrismaService,
@@ -23,7 +33,19 @@ export class ClustersService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+    private readonly squad: SquadService,
+  ) {
+    // const baseURL = options.isProduction
+    //   ? SQUAD_PRODUCTION_BASE_URL
+    //   : SQUAD_SANDBOX_BASE_URL;
+    // this.http = axios.create({
+    //   baseURL,
+    //   headers: {
+    //     Authorization: `Bearer ${options.secretKey}`,
+    //     'Content-Type': 'application/json',
+    //   },
+    // });
+  }
 
   async createCluster({ memberIds = [], name, desc }: CreateClusterDto) {
     const uniqueMemberIds = this.uniqueIds(memberIds);
@@ -76,6 +98,21 @@ export class ClustersService {
 
     return this.prisma.cluster.delete({
       where: { id: clusterId },
+    });
+  }
+
+  async requestVirtualAccountNumber(clusterId: string, dto: VirtualAccountDto) {
+    await this.assertClusterExists(clusterId);
+
+    const { data } = await this.squad.virtualAccount(dto);
+    console.log(data);
+
+    return this.prisma.cluster.update({
+      data: {
+        accountNumber: data.virtual_account_number,
+      },
+      where: { id: clusterId },
+      include: this.clusterInclude(),
     });
   }
 
