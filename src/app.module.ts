@@ -7,14 +7,9 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ClustersModule } from './clusters/clusters.module';
 import { SquadModule } from './squad/squad.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CacheModule } from '@nestjs/cache-manager';
-
+import { NotificationsModule } from './notifications/notifications.module';
 @Module({
   imports: [
-    CacheModule.register({
-      isGlobal: true,
-      ttl: 60 * 60 * 1000,
-    }),
     AuthModule.forRoot({
       auth,
       bodyParser: {
@@ -24,6 +19,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       },
     }),
     PrismaModule,
+    NotificationsModule,
     ClustersModule,
     SquadModule.registerAsync({
       imports: [ConfigModule],

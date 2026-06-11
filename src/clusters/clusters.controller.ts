@@ -16,7 +16,6 @@ import {
 } from './clusters.dto';
 import { ClustersService } from './clusters.service';
 import { OptionalAuth } from '@thallesp/nestjs-better-auth';
-import { CacheInterceptor } from '@nestjs/cache-manager';
 import { VirtualAccountDto } from '../squad/dto/squad.dto';
 
 type UpdateClusterAccountBody = {
@@ -25,7 +24,6 @@ type UpdateClusterAccountBody = {
 
 @OptionalAuth()
 @Controller('clusters')
-@UseInterceptors(CacheInterceptor)
 export class ClustersController {
   constructor(private readonly clustersService: ClustersService) {}
 

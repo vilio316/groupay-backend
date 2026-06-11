@@ -11,7 +11,6 @@ import {
   EditPlanDto,
   UpdateClusterAccountDto,
 } from './clusters.dto';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { SquadService } from '../squad/squad.service';
 import { VirtualAccountDto } from '../squad/dto/squad.dto';
 import {
@@ -32,7 +31,6 @@ type ClusterTransaction = Pick<
 export class ClustersService {
   constructor(
     private readonly prisma: PrismaService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly squad: SquadService,
   ) {
     // const baseURL = options.isProduction
