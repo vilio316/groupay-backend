@@ -13,7 +13,7 @@ import { CacheModule } from '@nestjs/cache-manager';
   imports: [
     CacheModule.register({
       isGlobal: true,
-      ttl: 60 * 1000,
+      ttl: 60 * 60 * 1000,
     }),
     AuthModule.forRoot({
       auth,

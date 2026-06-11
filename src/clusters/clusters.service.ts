@@ -105,7 +105,6 @@ export class ClustersService {
     await this.assertClusterExists(clusterId);
 
     const { data } = await this.squad.virtualAccount(dto);
-    console.log(data);
 
     return this.prisma.cluster.update({
       data: {

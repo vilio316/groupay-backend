@@ -38,7 +38,7 @@ export class SquadController {
   constructor(private readonly squadService: SquadService) {}
 
   // @AllowAnonymous()
-  // @Post('webhook')v
+  // @Post('webhook')
   // @HttpCode(HttpStatus.OK)
   // handleWebhook(
   //   @Body() payload: Record<string, unknown>,
