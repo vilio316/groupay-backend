@@ -37,20 +37,20 @@ import * as path from 'path';
 export class SquadController {
   constructor(private readonly squadService: SquadService) {}
 
-  // @AllowAnonymous()
-  // @Post('webhook')
-  // @HttpCode(HttpStatus.OK)
-  // handleWebhook(
-  //   @Body() payload: Record<string, unknown>,
-  //   @Headers('x-squad-signature') squadSignature?: string,
-  //   @Headers('squad-signature') fallbackSignature?: string,
-  //   @Headers('x-signature') genericSignature?: string,
-  // ) {
-  //   return this.squadService.handleWebhook(
-  //     payload,
-  //     squadSignature ?? fallbackSignature ?? genericSignature,
-  //   );
-  // }
+  @AllowAnonymous()
+  @Post('webhook')
+  @HttpCode(HttpStatus.OK)
+  handleWebhook(
+    @Body() payload: Record<string, unknown>,
+    @Headers('x-squad-signature') squadSignature?: string,
+    @Headers('squad-signature') fallbackSignature?: string,
+    @Headers('x-signature') genericSignature?: string,
+  ) {
+    return this.squadService.handleWebhook(
+      payload,
+      squadSignature ?? fallbackSignature ?? genericSignature,
+    );
+  }
 
   // ──────────────────────────────────────────────────────────────────────────
   // PAYMENTS
@@ -91,25 +91,6 @@ export class SquadController {
   @Patch('transaction/cancel/recurring')
   cancelRecurringCharge(@Body() dto: CancelRecurringChargeDto) {
     return this.squadService.cancelRecurringCharge(dto);
-  }
-
-  @Get('/events')
-  async getWebhookData() {
-    try {
-      const filePath = path.join(
-        process.cwd(),
-        'src',
-        'modules',
-        'squad',
-        'webhook_data.json',
-      );
-
-      const fileContents = await fs.readFileSync(filePath, 'utf-8');
-
-      return JSON.parse(fileContents);
-    } catch (error) {
-      throw new Error('Failed to read webhook_data.json');
-    }
   }
 
   /**

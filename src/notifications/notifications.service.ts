@@ -8,7 +8,18 @@ export class NotificationsService {
 
   getNotifs() {
     return this.prisma.notification.findMany({
-      //   orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  getUserNotis(id: string) {
+    return this.prisma.notification.findMany({
+      where: {
+        recipientId: id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 
@@ -18,7 +29,7 @@ export class NotificationsService {
     type,
     message,
   }: NotificationDto) {
-    await this.prisma.notification.create({
+    return this.prisma.notification.create({
       data: {
         senderId: senderId,
         recipientId: recipientId,

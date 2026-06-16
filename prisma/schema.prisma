@@ -99,6 +99,16 @@ model Transaction {
   clusterId String?
   plan      Plan?    @relation(fields: [planId], references: [id])
   planId    String?
+
+  transactionRef String @unique
+
+  amount  Float
+  channel String
+  status  String
+
+  createdAt DateTime @default(now())
+
+  webhookEvents WebhookEvent[]
 }
 
 model Plan {
@@ -145,11 +155,43 @@ model PlanMember {
   @@index([userId])
 }
 
-model Notification{
-  id String @id @default(uuid())
-  type String @default("")
-  senderId String
+model Notification {
+  id          String   @id @default(uuid())
+  type        String   @default("")
+  senderId    String
   recipientId String
-  message String
+  message     String
+  createdAt   DateTime @default(now())
+}
+
+model WebhookEvent {
+  id String @id @default(uuid())
+
+  provider             String
+  eventType            String
+  transactionReference String?
+  transferReference    String?
+  rawPayload           Json
+  signature            String?
+  processed            Boolean      @default(false)
+  processedAt          DateTime?
+  transaction          Transaction? @relation(fields: [transactionId], references: [id])
+  transactionId        String?
+  transfer             Transfer?    @relation(fields: [transferId], references: [id])
+  transferId           String?
+}
+
+model Transfer {
+  id String @id @default(uuid())
+
+  transferReference String @unique
+  amount            Float
+  currency          String @default("NGN")
+  status            String
+  rawPayload        Json?
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  webhookEvents WebhookEvent[]
 }

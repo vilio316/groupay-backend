@@ -52,7 +52,6 @@ export class ClustersController {
     @Param('clusterId') clusterId: string,
     @Body() body: Partial<CreateClusterDto>,
   ) {
-    console.log(body);
     return this.clustersService.updateClusterDetails(clusterId, body);
   }
 

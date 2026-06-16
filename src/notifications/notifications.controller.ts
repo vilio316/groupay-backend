@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { OptionalAuth } from '@thallesp/nestjs-better-auth';
 import { NotificationDto } from './notifications.dto';
@@ -11,6 +11,11 @@ export class NotificationsController {
   @Get()
   fetchNotifs() {
     return this.notifications.getNotifs();
+  }
+
+  @Get(`:id`)
+  getMyNotifs(@Param('id') id: string) {
+    return this.notifications.getUserNotis(id);
   }
 
   @Post()
