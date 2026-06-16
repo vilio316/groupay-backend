@@ -252,7 +252,7 @@ export class ClustersService {
   async updatePlan(
     clusterId: string,
     planId: string,
-    { name, desc }: EditPlanDto,
+    { name, desc, minimumContribution }: EditPlanDto,
   ) {
     await this.assertPlanInCluster(clusterId, planId);
 
@@ -261,6 +261,7 @@ export class ClustersService {
       data: {
         name: name,
         desc: desc,
+        minimumContribution: minimumContribution,
       },
       include: this.planInclude(),
     });
