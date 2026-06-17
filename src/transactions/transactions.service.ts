@@ -13,10 +13,20 @@ export class TransactionService {
     });
   }
 
-  getTrx(ref: string) {
-    return this.prisma.transaction.findUnique({
+  async getTrx(ref: string) {
+    const fromTxnTable = await this.prisma.transaction.findUnique({
       where: { transactionRef: ref },
     });
+    const fromWebhookEvent = await this.prisma.webhookEvent.findFirst({
+      where: { transactionReference: ref },
+    });
+
+    return {
+      ...fromTxnTable,
+      sender:
+        fromWebhookEvent?.rawPayload &&
+        fromWebhookEvent.rawPayload['Body'].email,
+    };
   }
 
   //   imaginary(){

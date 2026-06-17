@@ -9,6 +9,7 @@ import { SquadModule } from './squad/squad.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NotificationsModule } from './notifications/notifications.module';
 import { TransactionModule } from './transactions/transactions.module';
+import { UserModule } from './users/user.module';
 @Module({
   imports: [
     AuthModule.forRoot({
@@ -21,6 +22,7 @@ import { TransactionModule } from './transactions/transactions.module';
     }),
     PrismaModule,
     NotificationsModule,
+    UserModule,
     ClustersModule,
     TransactionModule,
     SquadModule.registerAsync({

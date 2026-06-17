@@ -1,5 +1,4 @@
 import { Get, Controller, Param } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { TransactionService } from './transactions.service';
 
 @Controller('transactions')
