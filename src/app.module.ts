@@ -8,6 +8,7 @@ import { ClustersModule } from './clusters/clusters.module';
 import { SquadModule } from './squad/squad.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NotificationsModule } from './notifications/notifications.module';
+import { TransactionModule } from './transactions/transactions.module';
 @Module({
   imports: [
     AuthModule.forRoot({
@@ -21,6 +22,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     PrismaModule,
     NotificationsModule,
     ClustersModule,
+    TransactionModule,
     SquadModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({

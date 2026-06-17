@@ -392,6 +392,7 @@ export class SquadService {
       [
         'transactionReference',
         'transactionRef',
+        'TransactionRef',
         'transaction_ref',
         'transaction_reference',
         'paymentReference',
@@ -533,7 +534,7 @@ export class SquadService {
   }
 
   private resolveEventData(payload: Record<string, any>) {
-    return (payload.data ?? payload.body ?? payload) as Record<string, any>;
+    return (payload.data ?? payload['Body'] ?? payload) as Record<string, any>;
   }
 
   // private async resolveVendorId(payload: Record<string, any>) {
