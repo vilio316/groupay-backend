@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Patch } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { OptionalAuth } from '@thallesp/nestjs-better-auth';
 import { NotificationDto } from './notifications.dto';
@@ -21,5 +21,10 @@ export class NotificationsController {
   @Post()
   postNotification(@Body() body: NotificationDto) {
     return this.notifications.sendNotification(body);
+  }
+
+  @Patch(`/item/:id`)
+  markAsRead(@Param('id') id: string) {
+    return this.notifications.markNotificationAsRead(id);
   }
 }

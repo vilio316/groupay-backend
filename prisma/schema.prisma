@@ -162,6 +162,7 @@ model Notification {
   recipientId String
   message     String
   createdAt   DateTime @default(now())
+  isRead      Boolean  @default(false)
 }
 
 model WebhookEvent {
