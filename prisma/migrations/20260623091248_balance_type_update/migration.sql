@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "Cluster" ALTER COLUMN "accountBalance" SET DEFAULT 0,
+ALTER COLUMN "accountBalance" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "account" ALTER COLUMN "accountBalance" SET DEFAULT 0,
+ALTER COLUMN "accountBalance" SET DATA TYPE DOUBLE PRECISION;

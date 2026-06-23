@@ -62,6 +62,8 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  accountNumber         String    @default("1234567890")
+  accountBalance        Float    @default(0)
 
   @@index([userId])
   @@map("account")
@@ -86,10 +88,11 @@ model Cluster {
   name      String?
   desc      String?
 
-  accountNumber String?
-  transactions  Transaction[]
-  members       ClusterMember[]
-  plans         Plan[]
+  accountNumber  String?
+  accountBalance Float          @default(0)
+  transactions   Transaction[]
+  members        ClusterMember[]
+  plans          Plan[]
 }
 
 model Transaction {
@@ -101,6 +104,7 @@ model Transaction {
   planId    String?
 
   transactionRef String @unique
+  transactionHeading String 
 
   amount  Float
   channel String

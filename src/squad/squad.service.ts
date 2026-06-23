@@ -83,7 +83,6 @@ export class SquadService {
   }
 
   async handleWebhook(payload: Record<string, any>, signature?: string) {
-    console.log(payload);
     if (!this.isValidWebhookSignature(payload, signature)) {
       throw new UnauthorizedException('Invalid Squad webhook signature');
     }
@@ -112,21 +111,6 @@ export class SquadService {
       },
     });
 
-    // if (!transactionReference && !transferReference) {
-    //   await this.markWebhookUnprocessed(
-    //     webhookEvent.id,
-    //     'FINANCIAL_REFERENCE_MISSING',
-    //   );
-
-    //   return {
-    //     received: true,
-    //     processed: false,
-    //     provider: 'squad',
-    //     eventType,
-    //     reason: 'FINANCIAL_REFERENCE_MISSING',
-    //   };
-    // }
-
     let persistedTransactionReference: string | null = null;
     let persistedTransferReference: string | null = null;
 
@@ -139,36 +123,6 @@ export class SquadService {
         );
         persistedTransactionReference = transactionReference;
       }
-
-      // if (transferReference) {
-      //   const transferSaved = await this.persistTransferFromWebhook(
-      //     transferReference,
-      //     data,
-      //     metadata,
-      //   );
-
-      //   if (!transferSaved) {
-      //     await this.markWebhookUnprocessed(
-      //       webhookEvent.id,
-      //       'BANK_ACCOUNT_METADATA_MISSING',
-      //       {
-      //         transactionReference: persistedTransactionReference,
-      //       },
-      //     );
-
-      //     return {
-      //       received: true,
-      //       processed: false,
-      //       provider: 'squad',
-      //       eventType,
-      //       transactionReference: transactionReference ?? null,
-      //       transferReference,
-      //       reason: 'BANK_ACCOUNT_METADATA_MISSING',
-      //     };
-      //   }
-
-      //   persistedTransferReference = transferReference;
-      // }
 
       await this.prisma.webhookEvent.update({
         where: { id: webhookEvent.id },
@@ -268,12 +222,13 @@ export class SquadService {
         ],
       ) ??
       (String(data.transaction_indicator ?? '').toUpperCase() === 'C'
-        ? 'SUCCESS'
+        ? 'Success'
         : 'UNKNOWN');
 
     await this.prisma.transaction.upsert({
       where: { transactionRef },
       create: {
+        clusterId: metadata.clusterId ?? null,
         transactionRef,
         amount,
         channel,
@@ -285,75 +240,43 @@ export class SquadService {
         status,
       },
     });
+
+    if (metadata.clusterId && status.toLowerCase().includes('success')) {
+      const clusterDetails = await this.prisma.cluster.findUnique({
+        where: {
+          id: metadata.clusterId,
+        },
+      });
+      await this.prisma.cluster.update({
+        where: {
+          id: metadata.clusterId,
+        },
+        data: {
+          accountBalance: Number(clusterDetails?.accountBalance) + amount,
+        },
+      });
+    }
+    if (
+      data.virtual_account_number &&
+      status.toLowerCase().includes('success')
+    ) {
+      const clusterLookupByAccountNumber = await this.prisma.cluster.findFirst({
+        where: {
+          accountNumber: data.virtual_account_number,
+        },
+      });
+      await this.prisma.cluster.update({
+        where: {
+          id: clusterLookupByAccountNumber?.id,
+        },
+        data: {
+          accountBalance:
+            Number(clusterLookupByAccountNumber?.accountBalance) +
+            Number(data.settled_amount) * 100,
+        },
+      });
+    }
   }
-
-  // private async persistTransferFromWebhook(
-  //   transferReference: string,
-  //   data: Record<string, any>,
-  //   metadata: Record<string, any>,
-  // ) {
-  //   const bankAccountId = this.resolveFirstStringFromSources(
-  //     [data, metadata],
-  //     ['bankAccountId', 'bank_account_id'],
-  //   );
-
-  //   if (!bankAccountId) {
-  //     this.logger.warn(
-  //       `Skipping transfer persistence for ${transferReference}; no bankAccountId was present in webhook metadata`,
-  //     );
-  //     return false;
-  //   }
-
-  //   const bankAccount = await this.prisma..findFirst({
-  //     where: {
-  //       id: bankAccountId,
-  //       vendorId,
-  //     },
-  //     select: { id: true },
-  //   });
-
-  //   if (!bankAccount) {
-  //     this.logger.warn(
-  //       `Skipping transfer persistence for ${transferReference}; bank account ${bankAccountId} was not found for vendor ${vendorId}`,
-  //     );
-  //     return false;
-  //   }
-
-  //   await this.prisma.transfer.upsert({
-  //     where: { transferReference },
-  //     create: {
-  //       vendorId,
-  //       bankAccountId,
-  //       transferReference,
-  //       amount: this.resolveAmount(data, metadata),
-  //       currency:
-  //         this.resolveFirstStringFromSources([data, metadata], [
-  //           'currency',
-  //           'currency_id',
-  //           'currencyId',
-  //         ]) ?? 'NGN',
-  //       status:
-  //         this.resolveFirstStringFromSources([data, metadata], ['status']) ??
-  //         'UNKNOWN',
-  //       rawPayload: data,
-  //     },
-  //     update: {
-  //       amount: this.resolveAmount(data, metadata),
-  //       currency:
-  //         this.resolveFirstStringFromSources([data, metadata], [
-  //           'currency',
-  //           'currency_id',
-  //           'currencyId',
-  //         ]) ?? 'NGN',
-  //       status:
-  //         this.resolveFirstStringFromSources([data, metadata], ['status']) ??
-  //         'UNKNOWN',
-  //       rawPayload: data,
-  //     },
-  //   });
-
-  //   return true;
-  // }
 
   private resolveWebhookEventType(
     payload: Record<string, any>,
@@ -363,7 +286,7 @@ export class SquadService {
       this.resolveFirstStringFromSources(
         [payload, data],
         ['eventType', 'event_type', 'Event', 'type', 'name'],
-      ) ?? 'UNKNOWN'
+      ) ?? 'virtual_account'
     );
   }
 
@@ -371,13 +294,12 @@ export class SquadService {
     payload: Record<string, any>,
     data: Record<string, any>,
   ) {
-    const body =
-      payload.body && typeof payload.body === 'object'
-        ? (payload.body as Record<string, any>)
-        : {};
+    const body = payload['Body']
+      ? (payload['Body'] as Record<string, any>)
+      : {};
 
     return {
-      ...this.asRecord(body.metadata),
+      ...this.asRecord(body.meta),
       ...this.asRecord(payload.metadata),
       ...this.asRecord(data.metadata),
     };
