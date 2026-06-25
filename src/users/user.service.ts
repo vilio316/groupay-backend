@@ -37,4 +37,12 @@ export class UserService {
       clusters: clusters,
     };
   }
+
+  getUsersByValue(email: string) {
+    return this.prisma.user.findMany({
+      where: {
+        email: email,
+      },
+    });
+  }
 }

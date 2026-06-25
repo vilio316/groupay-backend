@@ -14,4 +14,9 @@ export class UserController {
   fetchUser(@Param('email') email: string) {
     return this.user.fetchUser(email);
   }
+
+  @Get('/query/:email')
+  fetchQueryResults(@Param('email') email: string) {
+    return this.user.getUsersByValue(email);
+  }
 }

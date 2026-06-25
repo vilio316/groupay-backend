@@ -63,7 +63,7 @@ model Account {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   accountNumber         String    @default("1234567890")
-  accountBalance        Float    @default(0)
+  accountBalance        Float     @default(0)
 
   @@index([userId])
   @@map("account")
@@ -89,7 +89,7 @@ model Cluster {
   desc      String?
 
   accountNumber  String?
-  accountBalance Float          @default(0)
+  accountBalance Float           @default(0)
   transactions   Transaction[]
   members        ClusterMember[]
   plans          Plan[]
@@ -103,8 +103,8 @@ model Transaction {
   plan      Plan?    @relation(fields: [planId], references: [id])
   planId    String?
 
-  transactionRef String @unique
-  transactionHeading String 
+  transactionRef     String @unique
+  transactionHeading String @default("payment_desc")
 
   amount  Float
   channel String

@@ -43,12 +43,11 @@ export class SquadController {
   handleWebhook(
     @Body() payload: Record<string, unknown>,
     @Headers('x-squad-signature') squadSignature?: string,
-    @Headers('squad-signature') fallbackSignature?: string,
-    @Headers('x-signature') genericSignature?: string,
+    @Headers('x-squad-encrypted-body') encryptedBody?: string,
   ) {
     return this.squadService.handleWebhook(
       payload,
-      squadSignature ?? fallbackSignature ?? genericSignature,
+      squadSignature ?? encryptedBody,
     );
   }
 

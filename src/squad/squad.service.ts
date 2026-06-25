@@ -228,6 +228,9 @@ export class SquadService {
     await this.prisma.transaction.upsert({
       where: { transactionRef },
       create: {
+        transactionHeading: metadata.transactionHeading
+          ? metadata.transactionHeading
+          : data.remarks,
         clusterId: metadata.clusterId ?? null,
         transactionRef,
         amount,
@@ -273,6 +276,12 @@ export class SquadService {
           accountBalance:
             Number(clusterLookupByAccountNumber?.accountBalance) +
             Number(data.settled_amount) * 100,
+        },
+      });
+      await this.prisma.transaction.update({
+        where: { transactionRef },
+        data: {
+          clusterId: clusterLookupByAccountNumber?.id,
         },
       });
     }
@@ -421,7 +430,7 @@ export class SquadService {
     payload: Record<string, any>,
     signature?: string,
   ) {
-    const webhookSecret = null;
+    const webhookSecret = process.env.SQUAD_SECRET_KEY;
 
     if (!webhookSecret) {
       this.logger.warn(
@@ -434,7 +443,9 @@ export class SquadService {
       return false;
     }
 
-    const normalizedSignature = signature.replace(/^sha(512)=/i, '');
+    const normalizedSignature = signature
+      .toLowerCase()
+      .replace(/^sha(512)=/i, '');
     const body = JSON.stringify(payload);
     const candidates = [
       createHmac('sha512', webhookSecret).update(body).digest('hex'),

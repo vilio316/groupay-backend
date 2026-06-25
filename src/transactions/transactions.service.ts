@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { InitiatePaymentDto } from '../squad/dto/squad.dto';
 import { SquadService } from '../squad/squad.service';
 
 @Injectable()
@@ -29,18 +28,10 @@ export class TransactionService {
     return {
       ...fromTxnTable,
       sender:
-        fromWebhookEvent?.rawPayload &&
-        fromWebhookEvent.rawPayload['Body'].email,
+        fromWebhookEvent?.rawPayload && fromWebhookEvent.rawPayload['Body']
+          ? fromWebhookEvent.rawPayload['Body'].email
+          : 'unavailable',
     };
-  }
-
-  async handleTrx(dto: InitiatePaymentDto, clusterId: string) {
-    const paymentReq = await this.squad.initiatePayment({
-      ...dto,
-      metadata: {
-        clusterId,
-      },
-    });
   }
 
   //   imaginary(){
