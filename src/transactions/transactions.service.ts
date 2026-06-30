@@ -1,13 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SquadService } from '../squad/squad.service';
 
 @Injectable()
 export class TransactionService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly squad: SquadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   getAllTxns() {
     return this.prisma.transaction.findMany({
@@ -33,8 +29,4 @@ export class TransactionService {
           : 'unavailable',
     };
   }
-
-  //   imaginary(){
-  //     return this.prisma.transaction.fin
-  //   }
 }

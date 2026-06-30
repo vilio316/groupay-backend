@@ -192,6 +192,15 @@ export class SquadService {
     });
   }
 
+  private clusterInclude() {
+    return {
+      members: {
+        include: { user: true },
+        orderBy: { joinedAt: 'asc' as const },
+      },
+    };
+  }
+
   private async persistTransactionFromWebhook(
     transactionRef: string,
     data: Record<string, any>,
@@ -249,6 +258,7 @@ export class SquadService {
         where: {
           id: metadata.clusterId,
         },
+        include: this.clusterInclude(),
       });
       await this.prisma.cluster.update({
         where: {
@@ -258,6 +268,17 @@ export class SquadService {
           accountBalance: Number(clusterDetails?.accountBalance) + amount,
         },
       });
+      clusterDetails?.members.forEach(
+        async (member) =>
+          await this.prisma.notification.create({
+            data: {
+              senderId: 'GrouPay-App',
+              recipientId: member.user.id,
+              message: `You have received a payment of ${amount} in your cluster ${clusterDetails.name}`,
+              type: 'transaction',
+            },
+          }),
+      );
     }
     if (
       data.virtual_account_number &&
@@ -267,6 +288,7 @@ export class SquadService {
         where: {
           accountNumber: data.virtual_account_number,
         },
+        include: this.clusterInclude(),
       });
       await this.prisma.cluster.update({
         where: {
@@ -284,6 +306,17 @@ export class SquadService {
           clusterId: clusterLookupByAccountNumber?.id,
         },
       });
+      clusterLookupByAccountNumber?.members.forEach(
+        async (member) =>
+          await this.prisma.notification.create({
+            data: {
+              senderId: 'GrouPay-App',
+              recipientId: member.user.id,
+              message: `You have received a payment of ${amount} in your cluster ${clusterLookupByAccountNumber.name}`,
+              type: 'transaction',
+            },
+          }),
+      );
     }
   }
 
