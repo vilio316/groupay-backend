@@ -265,7 +265,8 @@ export class SquadService {
           id: metadata.clusterId,
         },
         data: {
-          accountBalance: Number(clusterDetails?.accountBalance) + amount,
+          accountBalance:
+            Number(clusterDetails?.accountBalance) + Number(amount),
         },
       });
       clusterDetails?.members.forEach(
@@ -274,7 +275,7 @@ export class SquadService {
             data: {
               senderId: 'GrouPay-App',
               recipientId: member.user.id,
-              message: `You have received a payment of ${amount} in your cluster ${clusterDetails.name}`,
+              message: `You have received a payment of ${amount / 100} in your cluster ${clusterDetails.name}`,
               type: 'transaction',
             },
           }),
@@ -574,8 +575,6 @@ export class SquadService {
       this.resolveFirstValueFromSources(
         [data, metadata],
         [
-          'principal_amount',
-          'principalAmount',
           'settled_amount',
           'settledAmount',
           'amount',
