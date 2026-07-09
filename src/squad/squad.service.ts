@@ -253,6 +253,7 @@ export class SquadService {
       },
     });
 
+    //handles card transactions into clusters via Squad Checkout
     if (metadata.clusterId && status.toLowerCase().includes('success')) {
       const clusterDetails = await this.prisma.cluster.findUnique({
         where: {
@@ -281,43 +282,71 @@ export class SquadService {
           }),
       );
     }
+    //
+
+    //handles transfers into the VA (for clusters)
     if (
       data.virtual_account_number &&
       status.toLowerCase().includes('success')
     ) {
-      const clusterLookupByAccountNumber = await this.prisma.cluster.findFirst({
-        where: {
-          accountNumber: data.virtual_account_number,
-        },
-        include: this.clusterInclude(),
-      });
-      await this.prisma.cluster.update({
-        where: {
-          id: clusterLookupByAccountNumber?.id,
-        },
-        data: {
-          accountBalance:
-            Number(clusterLookupByAccountNumber?.accountBalance) +
-            Number(data.settled_amount) * 100,
-        },
-      });
-      await this.prisma.transaction.update({
-        where: { transactionRef },
-        data: {
-          clusterId: clusterLookupByAccountNumber?.id,
-        },
-      });
-      clusterLookupByAccountNumber?.members.forEach(
-        async (member) =>
-          await this.prisma.notification.create({
-            data: {
-              senderId: 'GrouPay-App',
-              recipientId: member.user.id,
-              message: `You have received a payment of ${amount} in your cluster ${clusterLookupByAccountNumber.name}`,
-              type: 'transaction',
+      if (!data.customer_identifier.includes('@gmail.com')) {
+        const clusterLookupByAccountNumber =
+          await this.prisma.cluster.findFirst({
+            where: {
+              accountNumber: data.virtual_account_number,
             },
-          }),
-      );
+            include: this.clusterInclude(),
+          });
+        await this.prisma.cluster.update({
+          where: {
+            id: clusterLookupByAccountNumber?.id,
+          },
+          data: {
+            accountBalance:
+              Number(clusterLookupByAccountNumber?.accountBalance) +
+              Number(data.settled_amount) * 100,
+          },
+        });
+        await this.prisma.transaction.update({
+          where: { transactionRef },
+          data: {
+            clusterId: clusterLookupByAccountNumber?.id,
+          },
+        });
+        clusterLookupByAccountNumber?.members.forEach(
+          async (member) =>
+            await this.prisma.notification.create({
+              data: {
+                senderId: 'GrouPay-App',
+                recipientId: member.user.id,
+                message: `You have received a payment of ${amount} in your cluster ${clusterLookupByAccountNumber.name}`,
+                type: 'transaction',
+              },
+            }),
+        );
+      } else {
+        const userLookupByAccountNumber = await this.prisma.user.findFirst({
+          where: {
+            accountNumber: data.virtual_account_number,
+          },
+        });
+        await this.prisma.user.update({
+          where: { id: userLookupByAccountNumber?.id },
+          data: {
+            accountBalance:
+              Number(userLookupByAccountNumber?.accountBalance) +
+              Number(data.settled_amount) * 100,
+          },
+        });
+        await this.prisma.notification.create({
+          data: {
+            recipientId: String(userLookupByAccountNumber?.id),
+            senderId: 'GrouPay-App',
+            message: `You have receieved the sum of ${data.settled_amount} in your personal account`,
+            type: 'transaction',
+          },
+        });
+      }
     }
   }
 
