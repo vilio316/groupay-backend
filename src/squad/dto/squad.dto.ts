@@ -228,7 +228,6 @@ export class RefundDto {
 export class VirtualAccountDto {
   @IsString()
   @IsOptional()
-  vendorId?: string;
   customer_identifier: string;
 
   @IsNotEmpty()

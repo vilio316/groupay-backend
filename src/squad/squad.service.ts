@@ -504,69 +504,6 @@ export class SquadService {
     return (payload.data ?? payload['Body'] ?? payload) as Record<string, any>;
   }
 
-  // private async resolveVendorId(payload: Record<string, any>) {
-  //   const data = this.resolveEventData(payload);
-  //   const metadata = this.resolveWebhookMetadata(payload, data);
-  //   const directVendorId = this.resolveFirstStringFromSources(
-  //     [metadata, data],
-  //     ['vendor_id', 'vendorId'],
-  //   );
-
-  //   if (directVendorId) {
-  //     return directVendorId;
-  //   }
-
-  //   const customerIdentifier = this.resolveFirstStringFromSources(
-  //     [metadata, data],
-  //     ['customer_identifier', 'customerIdentifier'],
-  //   );
-
-  //   if (customerIdentifier) {
-  //     const vendor = await this.prisma.vendor.findUnique({
-  //       where: { id: customerIdentifier },
-  //       select: { id: true },
-  //     });
-
-  //     if (vendor) {
-  //       return vendor.id;
-  //     }
-
-  //     const virtualAccount = await this.prisma.virtualAccount.findFirst({
-  //       where: {
-  //         provider: 'squad',
-  //         customerIdentifier,
-  //       },
-  //       select: { vendorId: true },
-  //       orderBy: { createdAt: 'desc' },
-  //     });
-
-  //     if (virtualAccount) {
-  //       return virtualAccount.vendorId;
-  //     }
-  //   }
-
-  //   const virtualAccountNumber = this.resolveFirstStringFromSources(
-  //     [metadata, data],
-  //     ['virtual_account_number', 'virtualAccountNumber'],
-  //   );
-
-  //   if (virtualAccountNumber) {
-  //     const virtualAccount = await this.prisma.virtualAccount.findUnique({
-  //       where: {
-  //         provider_virtualAccountNumber: {
-  //           provider: 'squad',
-  //           virtualAccountNumber,
-  //         },
-  //       },
-  //       select: { vendorId: true },
-  //     });
-
-  //     return virtualAccount?.vendorId;
-  //   }
-
-  //   return undefined;
-  // }
-
   private resolveAmount(
     data: Record<string, any>,
     metadata: Record<string, any> = {},
@@ -682,121 +619,25 @@ export class SquadService {
     return data;
   }
 
-  // async getVendorVirtualAccounts(vendorId: string) {
-  //   const vendor = await this.prisma.vendor.findUnique({
-  //     where: { id: vendorId },
-  //     select: { id: true },
-  //   });
-
-  //   if (!vendor) {
-  //     throw new BadRequestException('Vendor not found');
-  //   }
-
-  //   const virtualAccounts = await this.prisma.virtualAccount.findMany({
-  //     where: {
-  //       vendorId,
-  //       provider: 'squad',
-  //     },
-  //     orderBy: { createdAt: 'desc' },
-  //   });
-
-  //   return {
-  //     success: true,
-  //     count: virtualAccounts.length,
-  //     data: virtualAccounts,
-  //   };
-  // }
-
-  async virtualAccount(dto): Promise<SquadApiResponse<any>> {
-    const { data } = await this.http.post('/virtual-account', dto);
-    return data;
+  async virtualAccount(
+    dto: VirtualAccountDto,
+    id?: string,
+  ): Promise<SquadApiResponse<any>> {
+    try {
+      const { data } = await this.http.post('/virtual-account', dto);
+      await this.prisma.user.update({
+        where: {
+          id,
+        },
+        data: {
+          accountNumber: data.data.virtual_account_number,
+        },
+      });
+      return data;
+    } catch (error: any) {
+      throw new Error(error);
+    }
   }
-
-  //Virtual Account Generation for users
-  // async virtualAccount(dto: VirtualAccountDto): Promise<SquadApiResponse<any>> {
-  //   const { vendorId: explicitVendorId, ...squadDto } = dto;
-  //   const vendorId = await this.resolveVirtualAccountVendorId(
-  //     explicitVendorId,
-  //     dto.customer_identifier,
-  //   );
-
-  //   if (!vendorId) {
-  //     throw new BadRequestException(
-  //       'A valid vendorId or vendor customer_identifier is required',
-  //     );
-  //   }
-
-  //   const { data } = await this.http.post('/virtual-account', squadDto);
-  //   const responseData = this.asRecord(data?.data ?? data);
-  //   const virtualAccountNumber = this.resolveFirstStringFromSources(
-  //     [responseData],
-  //     ['virtual_account_number', 'virtualAccountNumber', 'account_number'],
-  //   );
-
-  //   if (!virtualAccountNumber) {
-  //     throw new BadRequestException(
-  //       'Squad response did not include a virtual account number',
-  //     );
-  //   }
-
-  //   const virtualAccount = await this.prisma.virtualAccount.upsert({
-  //     where: {
-  //       provider_virtualAccountNumber: {
-  //         provider: 'squad',
-  //         virtualAccountNumber,
-  //       },
-  //     },
-  //     create: {
-  //       vendorId,
-  //       provider: 'squad',
-  //       customerIdentifier: dto.customer_identifier,
-  //       virtualAccountNumber,
-  //       currency:
-  //         this.resolveFirstStringFromSources([responseData], [
-  //           'currency',
-  //           'currency_id',
-  //           'currencyId',
-  //         ]) ?? 'NGN',
-  //       active: true,
-  //       rawResponse: data as any,
-  //     },
-  //     update: {
-  //       vendorId,
-  //       customerIdentifier: dto.customer_identifier,
-  //       currency:
-  //         this.resolveFirstStringFromSources([responseData], [
-  //           'currency',
-  //           'currency_id',
-  //           'currencyId',
-  //         ]) ?? 'NGN',
-  //       active: true,
-  //       rawResponse: data as any,
-  //     },
-  //   });
-
-  //   return {
-  //     ...data,
-  //     virtualAccount,
-  //   };
-  // }
-
-  // private async resolveVirtualAccountVendorId(
-  //   explicitVendorId?: string,
-  //   customerIdentifier?: string,
-  // ) {
-  //   const candidate = explicitVendorId ?? customerIdentifier;
-
-  //   if (!candidate) {
-  //     return undefined;
-  //   }
-
-  //   const vendor = await this.prisma.vendor.findUnique({
-  //     where: { id: candidate },
-  //     select: { id: true },
-  //   });
-
-  //   return vendor?.id;
-  // }
 
   // ──────────────────────────────────────────────────────────────────────────
   // TRANSFERS / PAYOUTS

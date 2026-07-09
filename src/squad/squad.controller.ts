@@ -29,10 +29,7 @@ import {
   OptionalAuth,
   Roles,
 } from '@thallesp/nestjs-better-auth';
-import * as fs from 'fs';
-import * as path from 'path';
 
-@OptionalAuth()
 @Controller('squad')
 export class SquadController {
   constructor(private readonly squadService: SquadService) {}
@@ -102,9 +99,9 @@ export class SquadController {
     return this.squadService.queryTransactions(query);
   }
 
-  @Post('/virtual')
-  postVirtualAccount(@Body() dto: VirtualAccountDto) {
-    return this.squadService.virtualAccount(dto);
+  @Post('/virtual/:id')
+  postVirtualAccount(@Body() dto: VirtualAccountDto, @Param('id') id: string) {
+    return this.squadService.virtualAccount(dto, id);
   }
 
   // @Roles(['admin', 'reviewer'])
