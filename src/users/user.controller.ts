@@ -19,4 +19,9 @@ export class UserController {
   fetchQueryResults(@Param('email') email: string) {
     return this.user.getUsersByValue(email);
   }
+
+  @Get('/account/:userId')
+  fetchUserAccount(@Param('userId') userId: string) {
+    return this.user.getUserAccount(userId);
+  }
 }

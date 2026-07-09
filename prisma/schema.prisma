@@ -28,6 +28,9 @@ model User {
 
   phone String? @default("08044441123")
 
+  accountNumber  String? @default("1234567890")
+  accountBalance Int?    @default(0)
+
   @@map("user")
 }
 

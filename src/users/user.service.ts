@@ -45,4 +45,14 @@ export class UserService {
       },
     });
   }
+
+  getUserAccount(userId: string) {
+    return this.prisma.user.findFirst({
+      where: { id: userId },
+      select: {
+        accountBalance: true,
+        accountNumber: true,
+      },
+    });
+  }
 }

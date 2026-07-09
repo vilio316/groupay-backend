@@ -13,6 +13,7 @@ import {
   CreatePlanDto,
   EditPlanDto,
   MemberBody,
+  PayFromAccountDto,
 } from './clusters.dto';
 import { ClustersService } from './clusters.service';
 import { OptionalAuth } from '@thallesp/nestjs-better-auth';
@@ -138,6 +139,14 @@ export class ClustersController {
     @Param('userId') userId: string,
   ) {
     return this.clustersService.removePlanMember(clusterId, planId, userId);
+  }
+
+  @Post(':clusterId/pay-from-account')
+  payFromAccount(
+    @Param('clusterId') clusterId: string,
+    @Body() body: PayFromAccountDto,
+  ) {
+    return this.clustersService.payFromAccount(clusterId, body);
   }
 
   @Post(':clusterId/requestVirtual')

@@ -9,6 +9,7 @@ import {
   CreateClusterDto,
   CreatePlanDto,
   EditPlanDto,
+  PayFromAccountDto,
   UpdateClusterAccountDto,
 } from './clusters.dto';
 import { SquadService } from '../squad/squad.service';
@@ -144,6 +145,50 @@ export class ClustersService {
       data: { accountNumber: accountNumber.trim() },
       include: this.clusterInclude(),
     });
+  }
+
+  async payFromAccount(
+    clusterId: string,
+    { userId, amount }: PayFromAccountDto,
+  ) {
+    await this.assertClusterExists(clusterId);
+
+    const account = await this.prisma.account.findFirst({
+      where: { userId },
+    });
+
+    if (!account) {
+      throw new BadRequestException('User account not found');
+    }
+
+    if (Number(account.accountBalance) < amount) {
+      throw new BadRequestException('Insufficient account balance');
+    }
+
+    const cluster = await this.prisma.cluster.update({
+      where: { id: clusterId },
+      data: { accountBalance: { increment: amount } },
+    });
+
+    await this.prisma.account.update({
+      where: { id: account.id },
+      data: { accountBalance: { decrement: amount } },
+    });
+
+    const transactionRef = `GP-${userId.slice(0, 8)}-${Date.now()}`;
+
+    await this.prisma.transaction.create({
+      data: {
+        transactionRef,
+        transactionHeading: 'Cluster Funding',
+        clusterId,
+        amount,
+        channel: 'groupay-account',
+        status: 'Success',
+      },
+    });
+
+    return { success: true, transactionRef, cluster };
   }
 
   async addClusterMember(clusterId: string, userId: string) {

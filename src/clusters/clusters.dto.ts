@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateClusterDto {
   accountNumber?: string;
@@ -39,4 +39,14 @@ export class MemberBody {
   @IsNotEmpty()
   @IsString()
   userId: string;
+}
+
+export class PayFromAccountDto {
+  @IsNotEmpty()
+  @IsString()
+  userId: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  amount: number;
 }

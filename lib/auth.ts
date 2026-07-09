@@ -40,6 +40,18 @@ export const auth = betterAuth({
         defaultValue: '08044441123',
         input: true,
       },
+      accountNumber: {
+        type: 'string',
+        required: false,
+        defaultValue: '1234567890',
+        input: true,
+      },
+      accountBalance: {
+        type: 'number',
+        required: false,
+        defaultValue: 0,
+        input: false,
+      },
     },
   },
   trustedOrigins: ['http://localhost:9909'],
