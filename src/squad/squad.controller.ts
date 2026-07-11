@@ -23,6 +23,7 @@ import {
   GetAllTransfersDto,
   RefundDto,
   VirtualAccountDto,
+  VirtualAccountForCluster,
 } from './dto/squad.dto';
 import {
   AllowAnonymous,
@@ -104,11 +105,14 @@ export class SquadController {
     return this.squadService.virtualAccount(dto, id);
   }
 
-  // @Roles(['admin', 'reviewer'])
-  // @Get('vendors/:vendorId/virtual-accounts')
-  // getVendorVirtualAccounts(@Param('vendorId') vendorId: string) {
-  //   return this.squadService.getVendorVirtualAccounts(vendorId);
-  // }
+  @Post('/virtual/cluster/:id')
+  createVirtualAccountForCluster(
+    @Body() dto: VirtualAccountForCluster,
+    @Param('id') id: string,
+  ) {
+    return this.squadService.virtualAccountForClusters(dto, id);
+  }
+
   // ──────────────────────────────────────────────────────────────────────────
   // SANDBOX HELPERS
   // ──────────────────────────────────────────────────────────────────────────

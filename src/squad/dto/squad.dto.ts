@@ -252,3 +252,25 @@ export class VirtualAccountDto {
   gender: string;
   beneficiary_account: string;
 }
+
+export class VirtualAccountForCluster {
+  @IsNotEmpty()
+  @IsString()
+  customer_identifier: string;
+
+  @IsNotEmpty()
+  @IsString()
+  business_name: string;
+
+  @IsNotEmpty()
+  @IsString()
+  mobile_num: string;
+
+  @IsNotEmpty()
+  @IsString()
+  bvn: string;
+
+  @IsNotEmpty()
+  @IsString()
+  beneficiary_account: string;
+}

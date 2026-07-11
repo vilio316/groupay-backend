@@ -33,6 +33,7 @@ import {
   GetAllTransfersDto,
   RefundDto,
   VirtualAccountDto,
+  VirtualAccountForCluster,
 } from './dto/squad.dto';
 
 import {
@@ -668,6 +669,23 @@ export class SquadService {
     }
   }
 
+  async virtualAccountForClusters(
+    dto: VirtualAccountForCluster,
+    id?: string,
+  ): Promise<SquadApiResponse<any>> {
+    try {
+      const { data } = await this.http.post('/virtual-account/business', dto);
+      await this.prisma.cluster.update({
+        where: { id },
+        data: {
+          accountNumber: data.data.virtual_account_number,
+        },
+      });
+      return data;
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  }
   // ──────────────────────────────────────────────────────────────────────────
   // TRANSFERS / PAYOUTS
   // ──────────────────────────────────────────────────────────────────────────
