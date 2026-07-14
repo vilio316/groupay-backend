@@ -153,15 +153,15 @@ export class ClustersService {
   ) {
     await this.assertClusterExists(clusterId);
 
-    const account = await this.prisma.account.findFirst({
-      where: { userId },
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId },
     });
 
-    if (!account) {
+    if (!user) {
       throw new BadRequestException('User account not found');
     }
 
-    if (Number(account.accountBalance) < amount) {
+    if (Number(user.accountBalance) < amount) {
       throw new BadRequestException('Insufficient account balance');
     }
 
@@ -170,8 +170,8 @@ export class ClustersService {
       data: { accountBalance: { increment: amount } },
     });
 
-    await this.prisma.account.update({
-      where: { id: account.id },
+    await this.prisma.user.update({
+      where: { id: userId },
       data: { accountBalance: { decrement: amount } },
     });
 
