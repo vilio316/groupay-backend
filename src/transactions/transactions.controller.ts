@@ -1,6 +1,6 @@
-import { Get, Controller, Param } from '@nestjs/common';
+import { Get, Controller, Param, Query } from '@nestjs/common';
 import { TransactionService } from './transactions.service';
-import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -8,10 +8,11 @@ export class TransactionsController {
   constructor(private readonly transactions: TransactionService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List all transactions', description: 'Retrieves all transactions across the entire platform.' })
+  @ApiOperation({ summary: 'List transactions for a user', description: 'Retrieves all transactions where the user is the sender or recipient. If no userId is provided, returns all transactions.' })
+  @ApiQuery({ name: 'userId', required: false, description: 'Filter transactions where this user is sender or recipient', example: 'user_abc123' })
   @ApiResponse({ status: 200, description: 'Transactions returned successfully' })
-  allTrxes() {
-    return this.transactions.getAllTxns();
+  allTrxes(@Query('userId') userId?: string) {
+    return this.transactions.getAllTxns(userId);
   }
 
   @Get(':ref')

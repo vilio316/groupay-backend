@@ -181,6 +181,8 @@ export class ClustersService {
       data: {
         transactionRef,
         transactionHeading: 'Cluster Funding',
+        type: 'outbound',
+        senderId: userId,
         clusterId,
         amount,
         channel: 'groupay-account',

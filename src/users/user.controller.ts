@@ -1,6 +1,7 @@
-import { Get, Controller, Param, Query } from '@nestjs/common';
+import { Get, Post, Body, Controller, Param, Query } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { TransferDto } from './user.dto';
+import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('Users')
 @Controller('userData')
@@ -39,5 +40,14 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'Account details returned', schema: { example: { id: 'acct_abc123', accountNumber: '1234567890', accountBalance: 100000 } } })
   fetchUserAccount(@Param('userId') userId: string) {
     return this.user.getUserAccount(userId);
+  }
+
+  @Post('/transfer')
+  @ApiOperation({ summary: 'Transfer funds between users', description: 'Transfers funds from one user\'s GrouPay wallet to another user\'s wallet. No additional charges applied.' })
+  @ApiBody({ type: TransferDto, description: 'Sender ID, recipient ID, and amount to transfer' })
+  @ApiResponse({ status: 201, description: 'Transfer successful' })
+  @ApiResponse({ status: 400, description: 'Insufficient balance or invalid request' })
+  transferFunds(@Body() body: TransferDto) {
+    return this.user.transferFunds(body);
   }
 }

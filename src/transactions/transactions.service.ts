@@ -5,12 +5,28 @@ import { PrismaService } from '../prisma/prisma.service';
 export class TransactionService {
   constructor(private readonly prisma: PrismaService) {}
 
-  getAllTxns() {
-    return this.prisma.transaction.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
+  async getAllTxns(userId?: string) {
+    const where = userId
+      ? {
+          OR: [
+            { senderId: userId },
+            { recipientId: userId },
+          ],
+        }
+      : {};
+
+    const txns = await this.prisma.transaction.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
     });
+
+    if (!userId) return txns;
+
+    return txns.map((txn) => ({
+      ...txn,
+      direction:
+        txn.recipientId === userId ? 'inbound' : 'outbound',
+    }));
   }
 
   async getTrx(ref: string) {
