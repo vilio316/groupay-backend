@@ -298,6 +298,36 @@ export class SquadService {
             },
             include: this.clusterInclude(),
           });
+
+        // ── Resolve matching pending transaction ────────────────────
+        const settledAmountNaira = Number(data.settled_amount) || 0;
+        const settledAmountKobo = settledAmountNaira * 100;
+        const tolerance = 0.05;
+
+        const pendingCandidates =
+          await this.prisma.pendingTransaction.findMany({
+            where: {
+              clusterId: clusterLookupByAccountNumber?.id,
+              status: 'pending',
+              expiresAt: { gt: new Date() },
+            },
+            orderBy: { createdAt: 'desc' },
+          });
+
+        const pendingMatch =
+          pendingCandidates.find((p) => {
+            const diff = Math.abs(p.amount - settledAmountKobo);
+            return diff / p.amount <= tolerance;
+          }) || pendingCandidates[0];
+
+        if (pendingMatch) {
+          await this.prisma.pendingTransaction.update({
+            where: { id: pendingMatch.id },
+            data: { status: 'matched' },
+          });
+        }
+        // ────────────────────────────────────────────────────────────
+
         await this.prisma.cluster.update({
           where: {
             id: clusterLookupByAccountNumber?.id,
@@ -305,22 +335,26 @@ export class SquadService {
           data: {
             accountBalance:
               Number(clusterLookupByAccountNumber?.accountBalance) +
-              Number(data.settled_amount) * 100,
+              settledAmountKobo,
           },
         });
         await this.prisma.transaction.update({
           where: { transactionRef },
           data: {
             clusterId: clusterLookupByAccountNumber?.id,
+            senderId: pendingMatch?.userId || undefined,
+            planId: pendingMatch?.planId || undefined,
           },
         });
+
+        const planHeading = pendingMatch?.planId ? 'plan' : 'cluster';
         clusterLookupByAccountNumber?.members.forEach(
           async (member) =>
             await this.prisma.notification.create({
               data: {
-                senderId: 'GrouPay-App',
+                senderId: pendingMatch?.userId || 'GrouPay-App',
                 recipientId: member.user.id,
-                message: `You have received a payment of ${amount} in your cluster ${clusterLookupByAccountNumber.name}`,
+                message: `You have received a payment of ₦${settledAmountNaira.toLocaleString()} in your ${planHeading} ${clusterLookupByAccountNumber.name}`,
                 type: 'transaction',
               },
             }),

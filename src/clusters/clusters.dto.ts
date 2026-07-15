@@ -93,6 +93,32 @@ export class MemberBody {
   userId: string;
 }
 
+export class CreatePendingTransactionDto {
+  @ApiProperty({
+    description: 'ID of the user initiating the transfer',
+    example: 'user_abc123',
+  })
+  @IsNotEmpty()
+  @IsString()
+  userId: string;
+
+  @ApiProperty({
+    description: 'Amount the user stated they sent (in kobo)',
+    example: 500000,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  amount: number;
+
+  @ApiPropertyOptional({
+    description: 'Plan ID this payment is for (optional)',
+    example: 'plan-uuid-here',
+  })
+  @IsOptional()
+  @IsString()
+  planId?: string;
+}
+
 export class PayFromAccountDto {
   @ApiProperty({
     description: 'ID of the user making the payment',

@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateClusterDto,
   CreatePlanDto,
+  CreatePendingTransactionDto,
   EditPlanDto,
   PayFromAccountDto,
   UpdateClusterAccountDto,
@@ -193,6 +194,48 @@ export class ClustersService {
     });
 
     return { success: true, transactionRef, cluster };
+  }
+
+  async createPendingTransaction(
+    clusterId: string,
+    body: CreatePendingTransactionDto,
+  ) {
+    await this.assertClusterExists(clusterId);
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    return this.prisma.pendingTransaction.create({
+      data: {
+        userId: body.userId,
+        clusterId,
+        planId: body.planId || undefined,
+        amount: body.amount,
+        expiresAt,
+        status: 'pending',
+      },
+    });
+  }
+
+  async findMatchingPendingTransaction(
+    clusterId: string,
+    webhookAmountNaira: number,
+  ) {
+    const webhookAmountKobo = webhookAmountNaira * 100;
+    const tolerance = 0.05;
+
+    const candidates = await this.prisma.pendingTransaction.findMany({
+      where: {
+        clusterId,
+        status: 'pending',
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const matchByAmount = candidates.find((p) => {
+      const diff = Math.abs(p.amount - webhookAmountKobo);
+      return diff / p.amount <= tolerance;
+    });
+
+    return matchByAmount || candidates[0] || null;
   }
 
   async addClusterMember(clusterId: string, userId: string) {

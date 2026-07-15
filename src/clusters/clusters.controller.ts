@@ -10,6 +10,7 @@ import {
 import {
   CreateClusterDto,
   CreatePlanDto,
+  CreatePendingTransactionDto,
   EditPlanDto,
   MemberBody,
   PayFromAccountDto,
@@ -215,6 +216,18 @@ export class ClustersController {
     @Body() body: PayFromAccountDto,
   ) {
     return this.clustersService.payFromAccount(clusterId, body);
+  }
+
+  @Post(':clusterId/pending-transaction')
+  @ApiOperation({ summary: 'Register pending transaction', description: 'Records a user\'s intent to pay into the cluster\'s virtual account. Matched against incoming Squad webhooks.' })
+  @ApiParam({ name: 'clusterId', description: 'The cluster ID' })
+  @ApiBody({ type: CreatePendingTransactionDto })
+  @ApiResponse({ status: 201, description: 'Pending transaction registered' })
+  createPendingTransaction(
+    @Param('clusterId') clusterId: string,
+    @Body() body: CreatePendingTransactionDto,
+  ) {
+    return this.clustersService.createPendingTransaction(clusterId, body);
   }
 
   @Post(':clusterId/requestVirtual')
