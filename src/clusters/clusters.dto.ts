@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateClusterDto {
@@ -109,4 +109,20 @@ export class PayFromAccountDto {
   @IsNotEmpty()
   @IsNumber()
   amount: number;
+
+  @ApiPropertyOptional({
+    description: 'Custom label for the transaction (defaults to "Cluster Funding")',
+    example: 'Plan Contribution',
+  })
+  @IsOptional()
+  @IsString()
+  transactionHeading?: string;
+
+  @ApiPropertyOptional({
+    description: 'Plan ID to associate this payment with',
+    example: 'plan-uuid-here',
+  })
+  @IsOptional()
+  @IsString()
+  planId?: string;
 }

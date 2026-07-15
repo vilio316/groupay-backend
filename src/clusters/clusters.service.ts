@@ -149,8 +149,9 @@ export class ClustersService {
 
   async payFromAccount(
     clusterId: string,
-    { userId, amount }: PayFromAccountDto,
+    body: PayFromAccountDto,
   ) {
+    const { userId, amount, planId } = body;
     await this.assertClusterExists(clusterId);
 
     const user = await this.prisma.user.findFirst({
@@ -180,10 +181,11 @@ export class ClustersService {
     await this.prisma.transaction.create({
       data: {
         transactionRef,
-        transactionHeading: 'Cluster Funding',
+        transactionHeading: body.transactionHeading || 'Cluster Funding',
         type: 'outbound',
         senderId: userId,
         clusterId,
+        planId: planId || undefined,
         amount,
         channel: 'groupay-account',
         status: 'Success',
