@@ -55,7 +55,7 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: ['http://localhost:9909'],
+  trustedOrigins: [process.env.CLIENT_DEV_URL as string],
   advanced: {
     disableOriginCheck: true,
     defaultCookieAttributes: {

@@ -274,8 +274,8 @@ export class SquadService {
             Number(clusterDetails?.accountBalance) + Number(amount),
         },
       });
-      clusterDetails?.members.forEach(
-        async (member) =>
+      clusterDetails?.members.forEach(async (member) => {
+        try {
           await this.prisma.notification.create({
             data: {
               senderId: 'GrouPay-App',
@@ -283,8 +283,11 @@ export class SquadService {
               message: `You have received a payment of ${amount / 100} in your cluster ${clusterDetails.name}`,
               type: 'transaction',
             },
-          }),
-      );
+          });
+        } catch (error) {
+          throw new Error('An error occurred when sending this notification');
+        }
+      });
     }
     //
 
@@ -352,8 +355,8 @@ export class SquadService {
         });
 
         const planHeading = pendingMatch?.planId ? 'plan' : 'cluster';
-        clusterLookupByAccountNumber?.members.forEach(
-          async (member) =>
+        clusterLookupByAccountNumber?.members.forEach(async (member) => {
+          try {
             await this.prisma.notification.create({
               data: {
                 senderId: pendingMatch?.userId || 'GrouPay-App',
@@ -361,8 +364,11 @@ export class SquadService {
                 message: `You have received a payment of ₦${settledAmountNaira.toLocaleString()} in your ${planHeading} ${clusterLookupByAccountNumber.name}`,
                 type: 'transaction',
               },
-            }),
-        );
+            });
+          } catch (err) {
+            throw new Error('an error occurred!');
+          }
+        });
       } else {
         const userLookupByAccountNumber = await this.prisma.user.findFirst({
           where: {
@@ -538,7 +544,7 @@ export class SquadService {
       this.logger.warn(
         'SQUAD_WEBHOOK_SECRET is not set; accepting Squad webhook without signature validation',
       );
-      return true;
+      return false;
     }
 
     if (!signature) {
