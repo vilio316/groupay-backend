@@ -10,6 +10,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NotificationsModule } from './notifications/notifications.module';
 import { TransactionModule } from './transactions/transactions.module';
 import { UserModule } from './users/user.module';
+import { PinModule } from './pin/pin.module';
 @Module({
   imports: [
     AuthModule.forRoot({
@@ -25,6 +26,7 @@ import { UserModule } from './users/user.module';
     UserModule,
     ClustersModule,
     TransactionModule,
+    PinModule,
     SquadModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({

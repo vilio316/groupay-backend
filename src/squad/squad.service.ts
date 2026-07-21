@@ -2,6 +2,7 @@ import {
   Injectable,
   Inject,
   BadRequestException,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Logger,
@@ -10,6 +11,7 @@ import {
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { PinService } from '../pin/pin.service';
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -56,6 +58,7 @@ export class SquadService {
   constructor(
     @Inject(SQUAD_MODULE_OPTIONS) private readonly options: SquadModuleOptions,
     private readonly prisma: PrismaService,
+    private readonly pinService: PinService,
   ) {
     const baseURL = options.isProduction
       ? SQUAD_PRODUCTION_BASE_URL
@@ -600,6 +603,15 @@ export class SquadService {
   async initiatePayment(
     dto: InitiatePaymentDto,
   ): Promise<SquadApiResponse<InitiatePaymentResponseData>> {
+    if (dto.userId) {
+      const user = await this.prisma.user.findUnique({ where: { id: dto.userId } });
+      if (user?.pinSet) {
+        if (!dto.pin) {
+          throw new ForbiddenException('PIN is required for this transaction');
+        }
+        await this.pinService.verifyPin(dto.userId, dto.pin);
+      }
+    }
     const { data } = await this.http.post<
       SquadApiResponse<InitiatePaymentResponseData>
     >('/transaction/initiate', dto);

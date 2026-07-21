@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class TransferDto {
   @ApiProperty({
@@ -25,4 +25,12 @@ export class TransferDto {
   @IsNotEmpty()
   @IsNumber()
   amount: number;
+
+  @ApiPropertyOptional({
+    description: '4-digit PIN for verification (required if PIN is set)',
+    example: '1234',
+  })
+  @IsOptional()
+  @IsString()
+  pin?: string;
 }

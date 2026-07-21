@@ -151,4 +151,12 @@ export class PayFromAccountDto {
   @IsOptional()
   @IsString()
   planId?: string;
+
+  @ApiPropertyOptional({
+    description: '4-digit PIN for verification (required if PIN is set)',
+    example: '1234',
+  })
+  @IsOptional()
+  @IsString()
+  pin?: string;
 }

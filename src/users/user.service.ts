@@ -1,10 +1,14 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { TransferDto } from './user.dto';
+import { PinService } from '../pin/pin.service';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly pinService: PinService,
+  ) {}
 
   getUsers() {
     return this.prisma.user.findMany({
@@ -57,7 +61,7 @@ export class UserService {
     });
   }
 
-  async transferFunds({ senderId, recipientId, amount }: TransferDto) {
+  async transferFunds({ senderId, recipientId, amount, pin }: TransferDto) {
     if (senderId === recipientId) {
       throw new BadRequestException('Cannot transfer to yourself');
     }
@@ -69,6 +73,13 @@ export class UserService {
     const sender = await this.prisma.user.findUnique({
       where: { id: senderId },
     });
+
+    if (sender?.pinSet) {
+      if (!pin) {
+        throw new ForbiddenException('PIN is required for this transaction');
+      }
+      await this.pinService.verifyPin(senderId, pin);
+    }
 
     if (!sender) {
       throw new BadRequestException('Sender account not found');

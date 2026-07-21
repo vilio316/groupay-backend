@@ -1,6 +1,6 @@
 import {
   BadRequestException,
-  Inject,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -14,6 +14,7 @@ import {
   UpdateClusterAccountDto,
 } from './clusters.dto';
 import { SquadService } from '../squad/squad.service';
+import { PinService } from '../pin/pin.service';
 import { VirtualAccountDto } from '../squad/dto/squad.dto';
 import {
   SQUAD_MODULE_OPTIONS,
@@ -34,6 +35,7 @@ export class ClustersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly squad: SquadService,
+    private readonly pinService: PinService,
   ) {
     // const baseURL = options.isProduction
     //   ? SQUAD_PRODUCTION_BASE_URL
@@ -152,7 +154,7 @@ export class ClustersService {
     clusterId: string,
     body: PayFromAccountDto,
   ) {
-    const { userId, amount, planId } = body;
+    const { userId, amount, planId, pin } = body;
     await this.assertClusterExists(clusterId);
 
     const user = await this.prisma.user.findFirst({
@@ -165,6 +167,13 @@ export class ClustersService {
 
     if (Number(user.accountBalance) < amount) {
       throw new BadRequestException('Insufficient account balance');
+    }
+
+    if (user.pinSet) {
+      if (!pin) {
+        throw new ForbiddenException('PIN is required for this transaction');
+      }
+      await this.pinService.verifyPin(userId, pin);
     }
 
     const cluster = await this.prisma.cluster.update({

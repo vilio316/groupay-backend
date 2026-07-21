@@ -78,6 +78,16 @@ export class InitiatePaymentDto {
   @IsString()
   @IsOptional()
   sub_merchant_id?: string;
+
+  @ApiPropertyOptional({ description: 'User ID making the payment (required if PIN is set)' })
+  @IsString()
+  @IsOptional()
+  userId?: string;
+
+  @ApiPropertyOptional({ description: '4-digit PIN for verification (required if PIN is set)' })
+  @IsString()
+  @IsOptional()
+  pin?: string;
 }
 
 // ─── Charge Card ─────────────────────────────────────────────────────────────
