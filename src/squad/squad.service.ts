@@ -307,15 +307,16 @@ export class SquadService {
         const settledAmountKobo = settledAmountNaira * 100;
         const tolerance = 0.05;
 
-        const pendingCandidates =
-          await this.prisma.pendingTransaction.findMany({
+        const pendingCandidates = await this.prisma.pendingTransaction.findMany(
+          {
             where: {
               clusterId: clusterLookupByAccountNumber?.id,
               status: 'pending',
               expiresAt: { gt: new Date() },
             },
             orderBy: { createdAt: 'desc' },
-          });
+          },
+        );
 
         const pendingMatch =
           pendingCandidates.find((p) => {
@@ -603,15 +604,6 @@ export class SquadService {
   async initiatePayment(
     dto: InitiatePaymentDto,
   ): Promise<SquadApiResponse<InitiatePaymentResponseData>> {
-    if (dto.userId) {
-      const user = await this.prisma.user.findUnique({ where: { id: dto.userId } });
-      if (user?.pinSet) {
-        if (!dto.pin) {
-          throw new ForbiddenException('PIN is required for this transaction');
-        }
-        await this.pinService.verifyPin(dto.userId, dto.pin);
-      }
-    }
     const { data } = await this.http.post<
       SquadApiResponse<InitiatePaymentResponseData>
     >('/transaction/initiate', dto);

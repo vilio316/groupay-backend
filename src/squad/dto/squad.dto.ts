@@ -19,16 +19,26 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 // ─── Initiate Payment ────────────────────────────────────────────────────────
 
 export class InitiatePaymentDto {
-  @ApiProperty({ description: 'Customer email address', example: 'user@example.com' })
+  @ApiProperty({
+    description: 'Customer email address',
+    example: 'user@example.com',
+  })
   @IsEmail()
   email: string;
 
-  @ApiProperty({ description: 'Amount in kobo (e.g. 50000 = ₦500)', example: 50000 })
+  @ApiProperty({
+    description: 'Amount in kobo (e.g. 50000 = ₦500)',
+    example: 50000,
+  })
   @IsNumber()
   @Min(1)
   amount: number;
 
-  @ApiProperty({ description: 'Initiation type', default: 'inline', example: 'inline' })
+  @ApiProperty({
+    description: 'Initiation type',
+    default: 'inline',
+    example: 'inline',
+  })
   @IsString()
   @IsIn(['inline'])
   initiate_type: string = 'inline';
@@ -38,56 +48,68 @@ export class InitiatePaymentDto {
   @IsIn(['NGN', 'USD'])
   currency: string = 'NGN';
 
-  @ApiPropertyOptional({ description: 'Unique transaction reference (auto-generated if omitted)', example: 'TXN_1712345678' })
+  @ApiPropertyOptional({
+    description: 'Unique transaction reference (auto-generated if omitted)',
+    example: 'TXN_1712345678',
+  })
   @IsString()
   @IsOptional()
   transaction_ref?: string;
 
-  @ApiPropertyOptional({ description: 'Customer name for the transaction', example: 'John Doe' })
+  @ApiPropertyOptional({
+    description: 'Customer name for the transaction',
+    example: 'John Doe',
+  })
   @IsString()
   @IsOptional()
   customer_name?: string;
 
-  @ApiPropertyOptional({ description: 'URL to redirect after payment', example: 'https://groupay.com/dashboard' })
+  @ApiPropertyOptional({
+    description: 'URL to redirect after payment',
+    example: 'https://groupay.com/dashboard',
+  })
   @IsString()
   @IsOptional()
   callback_url?: string;
 
-  @ApiPropertyOptional({ description: 'Restrict payment to specific channels', example: ['card', 'bank', 'ussd', 'transfer'] })
+  @ApiPropertyOptional({
+    description: 'Restrict payment to specific channels',
+    example: ['card', 'bank', 'ussd', 'transfer'],
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   payment_channels?: Array<'card' | 'bank' | 'ussd' | 'transfer'>;
 
-  @ApiPropertyOptional({ description: 'Arbitrary metadata attached to the transaction' })
+  @ApiPropertyOptional({
+    description: 'Arbitrary metadata attached to the transaction',
+  })
   @IsObject()
   @IsOptional()
   metadata?: Record<string, any>;
 
-  @ApiPropertyOptional({ description: 'Pass transaction charge to customer', example: true })
+  @ApiPropertyOptional({
+    description: 'Pass transaction charge to customer',
+    example: true,
+  })
   @IsBoolean()
   @IsOptional()
   pass_charge?: boolean;
 
-  @ApiPropertyOptional({ description: 'Whether this is a recurring payment', example: false })
+  @ApiPropertyOptional({
+    description: 'Whether this is a recurring payment',
+    example: false,
+  })
   @IsBoolean()
   @IsOptional()
   is_recurring?: boolean;
 
-  @ApiPropertyOptional({ description: 'Sub-merchant ID for marketplace payments' })
+  @ApiPropertyOptional({
+    description: 'Sub-merchant ID for marketplace payments',
+  })
   @IsString()
   @IsOptional()
   sub_merchant_id?: string;
-
-  @ApiPropertyOptional({ description: 'User ID making the payment (required if PIN is set)' })
-  @IsString()
-  @IsOptional()
-  userId?: string;
-
-  @ApiPropertyOptional({ description: '4-digit PIN for verification (required if PIN is set)' })
-  @IsString()
-  @IsOptional()
-  pin?: string;
 }
 
 // ─── Charge Card ─────────────────────────────────────────────────────────────
@@ -98,12 +120,18 @@ export class ChargeCardDto {
   @Min(1)
   amount: number;
 
-  @ApiProperty({ description: 'Token ID from a previously saved card', example: 'tok_abc123' })
+  @ApiProperty({
+    description: 'Token ID from a previously saved card',
+    example: 'tok_abc123',
+  })
   @IsString()
   @IsNotEmpty()
   token_id: string;
 
-  @ApiPropertyOptional({ description: 'Unique transaction reference', example: 'TXN_1712345679' })
+  @ApiPropertyOptional({
+    description: 'Unique transaction reference',
+    example: 'TXN_1712345679',
+  })
   @IsString()
   @IsOptional()
   transaction_ref?: string;
@@ -112,7 +140,10 @@ export class ChargeCardDto {
 // ─── Cancel Recurring Charge ─────────────────────────────────────────────────
 
 export class CancelRecurringChargeDto {
-  @ApiProperty({ description: 'Array of authorization codes to cancel', example: ['auth_code_1', 'auth_code_2'] })
+  @ApiProperty({
+    description: 'Array of authorization codes to cancel',
+    example: ['auth_code_1', 'auth_code_2'],
+  })
   @IsArray()
   @IsString({ each: true })
   auth_code: string[];
@@ -134,7 +165,11 @@ export class QueryTransactionsDto {
   @IsDateString()
   end_date: string;
 
-  @ApiProperty({ description: 'Page number for pagination', default: 1, example: 1 })
+  @ApiProperty({
+    description: 'Page number for pagination',
+    default: 1,
+    example: 1,
+  })
   @IsInt()
   @IsPositive()
   @Type(() => Number)
@@ -155,12 +190,18 @@ export class QueryTransactionsDto {
 // ─── Simulate Transfer Payment (Sandbox) ────────────────────────────────────
 
 export class SimulatePaymentDto {
-  @ApiProperty({ description: 'Virtual account number to simulate payment into', example: '9876543210' })
+  @ApiProperty({
+    description: 'Virtual account number to simulate payment into',
+    example: '9876543210',
+  })
   @IsString()
   @IsNotEmpty()
   virtual_account_number: string;
 
-  @ApiProperty({ description: 'Amount to simulate (as string)', example: '5000' })
+  @ApiProperty({
+    description: 'Amount to simulate (as string)',
+    example: '5000',
+  })
   @IsNotEmpty()
   amount: string;
 }
@@ -173,7 +214,10 @@ export class AccountLookupDto {
   @IsNotEmpty()
   bank_code: string;
 
-  @ApiProperty({ description: 'Account number to look up', example: '0123456789' })
+  @ApiProperty({
+    description: 'Account number to look up',
+    example: '0123456789',
+  })
   @IsString()
   @IsNotEmpty()
   account_number: string;
@@ -182,7 +226,10 @@ export class AccountLookupDto {
 // ─── Fund Transfer ───────────────────────────────────────────────────────────
 
 export class FundTransferDto {
-  @ApiProperty({ description: 'Unique transaction reference for this transfer', example: 'TFR_1712345680' })
+  @ApiProperty({
+    description: 'Unique transaction reference for this transfer',
+    example: 'TFR_1712345680',
+  })
   @IsString()
   @IsNotEmpty()
   transaction_reference: string;
@@ -192,12 +239,18 @@ export class FundTransferDto {
   @IsNotEmpty()
   amount: string;
 
-  @ApiProperty({ description: 'Bank code of the recipient bank', example: '058' })
+  @ApiProperty({
+    description: 'Bank code of the recipient bank',
+    example: '058',
+  })
   @IsString()
   @IsNotEmpty()
   bank_code: string;
 
-  @ApiProperty({ description: 'Recipient account number', example: '0123456789' })
+  @ApiProperty({
+    description: 'Recipient account number',
+    example: '0123456789',
+  })
   @IsString()
   @IsNotEmpty()
   account_number: string;
@@ -212,7 +265,10 @@ export class FundTransferDto {
   @IsIn(['NGN'])
   currency_id: string = 'NGN';
 
-  @ApiProperty({ description: 'Transfer remark/narration', example: 'Payout for savings plan' })
+  @ApiProperty({
+    description: 'Transfer remark/narration',
+    example: 'Payout for savings plan',
+  })
   @IsString()
   @IsNotEmpty()
   remark: string;
@@ -221,7 +277,10 @@ export class FundTransferDto {
 // ─── Re-query Transfer ───────────────────────────────────────────────────────
 
 export class RequeryTransferDto {
-  @ApiProperty({ description: 'Transaction reference to re-query', example: 'TFR_1712345680' })
+  @ApiProperty({
+    description: 'Transaction reference to re-query',
+    example: 'TFR_1712345680',
+  })
   @IsString()
   @IsNotEmpty()
   transaction_reference: string;
@@ -242,7 +301,11 @@ export class GetAllTransfersDto {
   @Type(() => Number)
   perPage: number = 20;
 
-  @ApiProperty({ description: 'Sort direction', default: 'DESC', example: 'DESC' })
+  @ApiProperty({
+    description: 'Sort direction',
+    default: 'DESC',
+    example: 'DESC',
+  })
   @IsString()
   @IsIn(['ASC', 'DESC'])
   dir: 'ASC' | 'DESC' = 'DESC';
@@ -251,12 +314,18 @@ export class GetAllTransfersDto {
 // ─── Refund ──────────────────────────────────────────────────────────────────
 
 export class RefundDto {
-  @ApiProperty({ description: 'Gateway transaction reference from Squad', example: 'SQD_987654' })
+  @ApiProperty({
+    description: 'Gateway transaction reference from Squad',
+    example: 'SQD_987654',
+  })
   @IsString()
   @IsNotEmpty()
   gateway_transaction_ref: string;
 
-  @ApiProperty({ description: 'Your internal transaction reference', example: 'TXN_1712345678' })
+  @ApiProperty({
+    description: 'Your internal transaction reference',
+    example: 'TXN_1712345678',
+  })
   @IsString()
   @IsNotEmpty()
   transaction_ref: string;
@@ -266,12 +335,18 @@ export class RefundDto {
   @IsIn(['Full', 'Partial'])
   refund_type: 'Full' | 'Partial';
 
-  @ApiProperty({ description: 'Reason for the refund', example: 'Customer requested cancellation' })
+  @ApiProperty({
+    description: 'Reason for the refund',
+    example: 'Customer requested cancellation',
+  })
   @IsString()
   @IsNotEmpty()
   reason_for_refund: string;
 
-  @ApiPropertyOptional({ description: 'Refund amount (required for Partial refunds)', example: '25000' })
+  @ApiPropertyOptional({
+    description: 'Refund amount (required for Partial refunds)',
+    example: '25000',
+  })
   @IsString()
   @IsOptional()
   refund_amount?: string;
@@ -280,16 +355,25 @@ export class RefundDto {
 // ─── Virtual Account (User) ──────────────────────────────────────────────────
 
 export class VirtualAccountDto {
-  @ApiPropertyOptional({ description: 'Customer identifier', example: 'user_abc123' })
+  @ApiPropertyOptional({
+    description: 'Customer identifier',
+    example: 'user_abc123',
+  })
   @IsString()
   @IsOptional()
   customer_identifier: string;
 
-  @ApiProperty({ description: 'First name of the account holder', example: 'John' })
+  @ApiProperty({
+    description: 'First name of the account holder',
+    example: 'John',
+  })
   @IsNotEmpty()
   first_name: string;
 
-  @ApiProperty({ description: 'Last name of the account holder', example: 'Doe' })
+  @ApiProperty({
+    description: 'Last name of the account holder',
+    example: 'Doe',
+  })
   @IsNotEmpty()
   last_name: string;
 
@@ -302,14 +386,23 @@ export class VirtualAccountDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ description: 'BVN (Bank Verification Number)', example: '12345678901' })
+  @ApiProperty({
+    description: 'BVN (Bank Verification Number)',
+    example: '12345678901',
+  })
   @IsNotEmpty()
   bvn: string;
 
-  @ApiProperty({ description: 'Date of birth (YYYY-MM-DD)', example: '1995-06-15' })
+  @ApiProperty({
+    description: 'Date of birth (YYYY-MM-DD)',
+    example: '1995-06-15',
+  })
   dob: string;
 
-  @ApiProperty({ description: 'Residential address', example: '14B Adeola Odeku Street, VI, Lagos' })
+  @ApiProperty({
+    description: 'Residential address',
+    example: '14B Adeola Odeku Street, VI, Lagos',
+  })
   @IsNotEmpty()
   address: string;
 
@@ -323,17 +416,26 @@ export class VirtualAccountDto {
 // ─── Virtual Account (Cluster) ───────────────────────────────────────────────
 
 export class VirtualAccountForCluster {
-  @ApiProperty({ description: 'Customer/business identifier', example: 'SQUAD_101' })
+  @ApiProperty({
+    description: 'Customer/business identifier',
+    example: 'SQUAD_101',
+  })
   @IsNotEmpty()
   @IsString()
   customer_identifier: string;
 
-  @ApiProperty({ description: 'Business or cluster name', example: 'Monthly Savings Group' })
+  @ApiProperty({
+    description: 'Business or cluster name',
+    example: 'Monthly Savings Group',
+  })
   @IsNotEmpty()
   @IsString()
   business_name: string;
 
-  @ApiProperty({ description: 'Mobile number of the requester', example: '08031234567' })
+  @ApiProperty({
+    description: 'Mobile number of the requester',
+    example: '08031234567',
+  })
   @IsNotEmpty()
   @IsString()
   mobile_num: string;
@@ -343,7 +445,10 @@ export class VirtualAccountForCluster {
   @IsString()
   bvn: string;
 
-  @ApiProperty({ description: 'Beneficiary account for settlements', example: '0123456789' })
+  @ApiProperty({
+    description: 'Beneficiary account for settlements',
+    example: '0123456789',
+  })
   @IsNotEmpty()
   @IsString()
   beneficiary_account: string;
