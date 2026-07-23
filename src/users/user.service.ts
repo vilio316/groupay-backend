@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { TransferDto } from './user.dto';
 import { PinService } from '../pin/pin.service';
@@ -9,14 +13,6 @@ export class UserService {
     private readonly prisma: PrismaService,
     private readonly pinService: PinService,
   ) {}
-
-  getUsers() {
-    return this.prisma.user.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-  }
 
   fetchUser(email: string) {
     return this.prisma.user.findUnique({
@@ -67,7 +63,9 @@ export class UserService {
     }
 
     if (amount <= 0) {
-      throw new BadRequestException('Transfer amount must be greater than zero');
+      throw new BadRequestException(
+        'Transfer amount must be greater than zero',
+      );
     }
 
     const sender = await this.prisma.user.findUnique({
