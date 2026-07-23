@@ -49,23 +49,51 @@ export class ClustersService {
     // });
   }
 
-  async createCluster({ memberIds = [], name, desc }: CreateClusterDto) {
-    const uniqueMemberIds = this.uniqueIds(memberIds);
-    await this.assertUsersExist(uniqueMemberIds);
+  async createCluster(
+    { memberIds = [], name, desc }: CreateClusterDto,
+    creatorId?: string,
+  ) {
+    const allMemberIds = this.uniqueIds([
+      ...memberIds,
+      ...(creatorId ? [creatorId] : []),
+    ]);
+    await this.assertUsersExist(allMemberIds);
 
-    return this.prisma.cluster.create({
+    const cluster = await this.prisma.cluster.create({
       data: {
         name: name,
         desc: desc,
         accountNumber: '',
         members: {
-          create: uniqueMemberIds.map((userId) => ({
+          create: allMemberIds.map((userId) => ({
             user: { connect: { id: userId } },
           })),
         },
       },
       include: this.clusterInclude(),
     });
+
+    const now = new Date();
+    await this.prisma.organization.create({
+      data: {
+        id: cluster.id,
+        name: name || 'Untitled Cluster',
+        slug: cluster.id,
+        createdAt: now,
+        members: {
+          createMany: {
+            data: allMemberIds.map((userId) => ({
+              id: `${cluster.id}-${userId}`,
+              userId,
+              role: userId === creatorId ? 'owner' : 'member',
+              createdAt: now,
+            })),
+          },
+        },
+      },
+    });
+
+    return this.attachMemberRoles(cluster, cluster.id);
   }
 
   findClusters() {
@@ -92,11 +120,18 @@ export class ClustersService {
       throw new NotFoundException('Cluster not found');
     }
 
-    return cluster;
+    return this.attachMemberRoles(cluster, clusterId);
   }
 
   async deleteCluster(clusterId: string) {
     await this.assertClusterExists(clusterId);
+
+    await this.prisma.member.deleteMany({
+      where: { organizationId: clusterId },
+    });
+    await this.prisma.organization.deleteMany({
+      where: { id: clusterId },
+    });
 
     return this.prisma.cluster.delete({
       where: { id: clusterId },
@@ -251,7 +286,7 @@ export class ClustersService {
     await this.assertClusterExists(clusterId);
     await this.assertUsersExist([userId]);
 
-    return this.prisma.clusterMember.upsert({
+    const member = await this.prisma.clusterMember.upsert({
       where: { userId_clusterId: { userId, clusterId } },
       update: {},
       create: {
@@ -260,6 +295,20 @@ export class ClustersService {
       },
       include: { user: true },
     });
+
+    await this.prisma.member.upsert({
+      where: { id: `${clusterId}-${userId}` },
+      update: {},
+      create: {
+        id: `${clusterId}-${userId}`,
+        organizationId: clusterId,
+        userId,
+        role: 'member',
+        createdAt: new Date(),
+      },
+    });
+
+    return member;
   }
 
   async removeClusterMember(clusterId: string, userId: string) {
@@ -270,6 +319,10 @@ export class ClustersService {
         userId,
         plan: { clusterId },
       },
+    });
+
+    await this.prisma.member.deleteMany({
+      where: { organizationId: clusterId, userId },
     });
 
     return this.prisma.clusterMember.delete({
@@ -444,6 +497,21 @@ export class ClustersService {
       memberCount: plan._count.members,
       transactionCount: plan._count.transactions,
     }));
+  }
+
+  private async attachMemberRoles(cluster: any, clusterId: string) {
+    const orgMembers = await this.prisma.member.findMany({
+      where: { organizationId: clusterId },
+      select: { userId: true, role: true },
+    });
+    const roleMap = new Map(orgMembers.map((m) => [m.userId, m.role]));
+    return {
+      ...cluster,
+      members: cluster.members.map((m: any) => ({
+        ...m,
+        role: roleMap.get(m.userId) || 'member',
+      })),
+    };
   }
 
   private uniqueIds(ids: string[]) {

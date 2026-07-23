@@ -1,4 +1,5 @@
 import { betterAuth } from 'better-auth';
+import { organization } from 'better-auth/plugins';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaClient } from '../generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -56,6 +57,7 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [process.env.CLIENT_DEV_URL as string],
+  plugins: [organization()],
   advanced: {
     disableOriginCheck: true,
     defaultCookieAttributes: {

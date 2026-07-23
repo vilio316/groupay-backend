@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
   CreateClusterDto,
@@ -16,7 +17,9 @@ import {
   PayFromAccountDto,
 } from './clusters.dto';
 import { ClustersService } from './clusters.service';
-import { OptionalAuth } from '@thallesp/nestjs-better-auth';
+import { OptionalAuth, Session } from '@thallesp/nestjs-better-auth';
+import { ClusterRoleGuard } from './cluster-role.guard';
+import { ClusterRole } from './cluster-role.decorator';
 import { VirtualAccountDto } from '../squad/dto/squad.dto';
 import { ApiTags, ApiOperation, ApiBody, ApiResponse, ApiParam } from '@nestjs/swagger';
 
@@ -34,8 +37,8 @@ export class ClustersController {
   @ApiOperation({ summary: 'Create a new cluster', description: 'Creates a savings cluster with the given name, description, and initial members.' })
   @ApiBody({ type: CreateClusterDto, description: 'Cluster creation payload' })
   @ApiResponse({ status: 201, description: 'Cluster created successfully', schema: { example: { id: 'clust_abc123', name: 'Monthly Savings Group', createdAt: '2026-03-15T10:30:00Z' } } })
-  createCluster(@Body() body: CreateClusterDto) {
-    return this.clustersService.createCluster(body);
+  createCluster(@Body() body: CreateClusterDto, @Session() session?: any) {
+    return this.clustersService.createCluster(body, session?.user?.id);
   }
 
   @Get()
@@ -63,6 +66,8 @@ export class ClustersController {
   }
 
   @Patch(':clusterId')
+  @UseGuards(ClusterRoleGuard)
+  @ClusterRole('owner', 'admin')
   @ApiOperation({ summary: 'Update cluster', description: 'Updates the name, description, or other fields of an existing cluster.' })
   @ApiParam({ name: 'clusterId', description: 'The cluster ID', example: 'clust_abc123' })
   @ApiBody({ type: CreateClusterDto, description: 'Fields to update (partial)' })
@@ -75,6 +80,8 @@ export class ClustersController {
   }
 
   @Delete(':clusterId')
+  @UseGuards(ClusterRoleGuard)
+  @ClusterRole('owner')
   @ApiOperation({ summary: 'Delete cluster', description: 'Permanently deletes a cluster and all its associated plans and memberships.' })
   @ApiParam({ name: 'clusterId', description: 'The cluster ID', example: 'clust_abc123' })
   @ApiResponse({ status: 200, description: 'Cluster deleted successfully' })
@@ -83,6 +90,8 @@ export class ClustersController {
   }
 
   @Patch(':clusterId/account-number')
+  @UseGuards(ClusterRoleGuard)
+  @ClusterRole('owner', 'admin')
   @ApiOperation({ summary: 'Update cluster account number', description: 'Updates the virtual account number assigned to a cluster.' })
   @ApiParam({ name: 'clusterId', description: 'The cluster ID', example: 'clust_abc123' })
   @ApiBody({ description: 'New account number', schema: { example: { accountNumber: '0987654321' } } })
@@ -95,6 +104,8 @@ export class ClustersController {
   }
 
   @Post(':clusterId/members')
+  @UseGuards(ClusterRoleGuard)
+  @ClusterRole('owner', 'admin')
   @ApiOperation({ summary: 'Add cluster member', description: 'Adds a user as a member of the specified cluster.' })
   @ApiParam({ name: 'clusterId', description: 'The cluster ID', example: 'clust_abc123' })
   @ApiBody({ type: MemberBody, description: 'User ID to add' })
@@ -107,6 +118,8 @@ export class ClustersController {
   }
 
   @Delete(':clusterId/members/:userId')
+  @UseGuards(ClusterRoleGuard)
+  @ClusterRole('owner', 'admin')
   @ApiOperation({ summary: 'Remove cluster member', description: 'Removes a user from the specified cluster.' })
   @ApiParam({ name: 'clusterId', description: 'The cluster ID', example: 'clust_abc123' })
   @ApiParam({ name: 'userId', description: 'The user ID to remove', example: 'user_abc123' })
@@ -119,6 +132,8 @@ export class ClustersController {
   }
 
   @Post(':clusterId/plans')
+  @UseGuards(ClusterRoleGuard)
+  @ClusterRole('owner', 'admin')
   @ApiOperation({ summary: 'Create a plan', description: 'Creates a new savings plan within the specified cluster.' })
   @ApiParam({ name: 'clusterId', description: 'The cluster ID', example: 'clust_abc123' })
   @ApiBody({ type: CreatePlanDto, description: 'Plan creation payload' })
@@ -131,6 +146,8 @@ export class ClustersController {
   }
 
   @Patch(':clusterId/plans/:planId')
+  @UseGuards(ClusterRoleGuard)
+  @ClusterRole('owner', 'admin')
   @ApiOperation({ summary: 'Update a plan', description: 'Updates the name, description, or minimum contribution of a plan.' })
   @ApiParam({ name: 'clusterId', description: 'The cluster ID', example: 'clust_abc123' })
   @ApiParam({ name: 'planId', description: 'The plan ID', example: 'plan_abc123' })
@@ -166,6 +183,8 @@ export class ClustersController {
   }
 
   @Delete(':clusterId/plans/:planId')
+  @UseGuards(ClusterRoleGuard)
+  @ClusterRole('owner', 'admin')
   @ApiOperation({ summary: 'Delete a plan', description: 'Permanently deletes a plan and its member associations.' })
   @ApiParam({ name: 'clusterId', description: 'The cluster ID', example: 'clust_abc123' })
   @ApiParam({ name: 'planId', description: 'The plan ID', example: 'plan_abc123' })
